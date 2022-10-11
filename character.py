@@ -6,7 +6,25 @@ STAGE_WIDTH, STAGE_LENGTH = 800, 800
 SCENE_WIDTH, SCENE_HEIGHT = 800, 800
 
 game_running = True
-open_canvas(800, 800)
+open_canvas(STAGE_WIDTH, STAGE_LENGTH)
+
+bullet_image = load_image('image/character/bullet.png')
+bullet_image_width = bullet_image.w
+bullet_image_height = bullet_image.h
+class Bullet:
+    def __init__(self, damage):
+        self.x, self.y = 0, 0
+        self.bx, self.by = 0, 0
+        self.rad = 0
+        self.damage = damage
+    def setBullet(self, x, y, rad):
+        self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
+        self.rad = rad
+    def update(self):
+        self.x += 10 * math.cos(self.rad)
+        self.y += 10 * math.sin(self.rad)
+    def render(self):
+        bullet_image.clip_composite_draw(0, 0, bullet_image_width, bullet_image_height, self.rad, '0', self.x, self.y, bullet_image_width, bullet_image_height)
 
 class Cursur:
     def __init__(self):
@@ -20,13 +38,17 @@ class Cursur:
     def render(self):
         self.cursur_image.draw(self.x, self.y, 30, 30)
 
-
 class Character:
     def __init__(self, x, y):
+        """
+        캐릭터 위치 및 정보
+        """
         self.x, self.y = x, y
-
         self.walk_speed, self.run_speed = 2.0, 3.5
 
+        """
+        캐릭터 발  
+        """
         # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
         self.feet_image = (load_image('image/character/feet/idle.png'),             # cnt = 1
                            load_image('image/character/feet/walk.png'),             # cnt = 20
@@ -41,6 +63,9 @@ class Character:
         self.feet_dir_y = 0
         self.feet_frame = 0
 
+        """
+        캐릭터 몸  
+        """
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         self.body_image = (load_image('image/character/body/idle.png'),             # cnt = 20
                            load_image('image/character/body/move.png'),             # cnt = 20
@@ -53,11 +78,24 @@ class Character:
         self.body_reload_frame = 0
         self.body_rad = 0
 
+        """
+        조작키
+        """
         self.run_key = False
         self.shoot_key = False
         self.reload_key = False
 
+        """
+        커서
+        """
         self.cursur = Cursur()
+
+        """
+        총알
+        """
+        self.bullets = [Bullet(40) for i in range(30)]
+        self.check_bullets = [False for i in range(30)]
+        self.next_bullet_index = 0
 
     def animation(self):
         # feet animation
@@ -69,18 +107,28 @@ class Character:
         # body animation
         if self.body_status == 3:
             self.body_frame = (self.body_frame + 1) % 3
-        elif self.body_status == 2:
+        elif self.reload_key:
             self.body_reload_frame = (self.body_reload_frame + 1) % 2
             if self.body_reload_frame == 1:
-                self.body_frame = (self.body_frame + 1) % 20
+                self.body_frame += 1
+            if self.body_frame >= 19:
+                self.reload_key = False
         else:
             self.body_frame = (self.body_frame + 1) % 20
+
+
+    def attack(self):
+        if self.body_status == 3 and self.body_frame == 0:
+            self.check_bullets[self.next_bullet_index] = True
+            self.bullets[self.next_bullet_index].setBullet(self.x + 10 * math.sin(self.body_rad), self.y - 10 * math.cos(self.body_rad), self.body_rad)
+            self.next_bullet_index = (self.next_bullet_index + 1) % 30
+
 
     def move(self):
         # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
         if self.feet_dir_x == 0 and self.feet_dir_y == 0:   # idle
             self.feet_status = 0
-        elif self.run_key:                                               # walk
+        elif self.run_key:
             self.feet_status = 2
         else:
             self.feet_status = 1
@@ -104,7 +152,7 @@ class Character:
     def action(self):
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         if self.reload_key:
-            self.body_status = 0
+            self.body_status = 2
         elif self.shoot_key:
             self.body_status = 3
         elif self.feet_status == 0:
@@ -115,13 +163,17 @@ class Character:
     def update(self):
         self.move()
         self.action()
-
+        self.attack()
         # 몸의 커서를 따라감
         self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) - math.pi / 2
         point_distance = math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2)
         self.body_rad -= math.atan2(point_distance, 400)
 
         self.animation()
+
+        for i in range(0, 30):
+            if self.check_bullets[i] == True:
+                self.bullets[i].update()
 
     def events_handler(self, event):
         if event.type == SDL_KEYDOWN:
@@ -135,8 +187,10 @@ class Character:
                 self.feet_dir_y -= 1
             elif event.key == SDLK_r:
                 self.reload_key = True
+                self.body_frame = 0
             elif event.key == SDLK_LSHIFT:
                 self.run_key = True
+                self.body_frame = 0
 
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_d:
@@ -147,8 +201,6 @@ class Character:
                 self.feet_dir_x += 1
             elif event.key == SDLK_s:
                 self.feet_dir_y += 1
-            elif event.key == SDLK_r:
-                self.reload_key = False
             elif event.key == SDLK_LSHIFT:
                 self.run_key = False
 
@@ -174,6 +226,10 @@ class Character:
                                                 self.body_image_width[bs] // 5, self.body_image_height[bs] // 5)
 
         self.cursur.render()
+
+        for i in range(0, 30):
+            if self.check_bullets[i] == True:
+                self.bullets[i].render()
 
 
 stage = load_image('image/stage/stage_test.png')
