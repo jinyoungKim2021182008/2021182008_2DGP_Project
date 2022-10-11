@@ -1,5 +1,6 @@
 from pico2d import *
 import math
+import weapon
 
 CHARACTER_WIDTH, CHARACTER_HEIGHT = 50, 50
 STAGE_WIDTH, STAGE_LENGTH = 800, 800
@@ -7,24 +8,6 @@ SCENE_WIDTH, SCENE_HEIGHT = 800, 800
 
 game_running = True
 open_canvas(STAGE_WIDTH, STAGE_LENGTH)
-
-bullet_image = load_image('image/character/bullet.png')
-bullet_image_width = bullet_image.w
-bullet_image_height = bullet_image.h
-class Bullet:
-    def __init__(self, damage):
-        self.x, self.y = 0, 0
-        self.bx, self.by = 0, 0
-        self.rad = 0
-        self.damage = damage
-    def setBullet(self, x, y, rad):
-        self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
-        self.rad = rad
-    def update(self):
-        self.x += 10 * math.cos(self.rad)
-        self.y += 10 * math.sin(self.rad)
-    def render(self):
-        bullet_image.clip_composite_draw(0, 0, bullet_image_width, bullet_image_height, self.rad, '0', self.x, self.y, bullet_image_width, bullet_image_height)
 
 class Cursur:
     def __init__(self):
@@ -91,11 +74,9 @@ class Character:
         self.cursur = Cursur()
 
         """
-        총알
+        무기
         """
-        self.bullets = [Bullet(40) for i in range(30)]
-        self.check_bullets = [False for i in range(30)]
-        self.next_bullet_index = 0
+        self.main_weapon = weapon.Rifle_1(True)
 
     def animation(self):
         # feet animation
@@ -119,10 +100,7 @@ class Character:
 
     def attack(self):
         if self.body_status == 3 and self.body_frame == 0:
-            self.check_bullets[self.next_bullet_index] = True
-            self.bullets[self.next_bullet_index].setBullet(self.x + 10 * math.sin(self.body_rad), self.y - 10 * math.cos(self.body_rad), self.body_rad)
-            self.next_bullet_index = (self.next_bullet_index + 1) % 30
-
+            self.main_weapon.shoot(self.x, self.y, self.body_rad)
 
     def move(self):
         # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
@@ -148,6 +126,10 @@ class Character:
                          (-speed, 0), (-speed / 1.4, -speed / 1.4), (0, -speed), (speed / 1.4, -speed / 1.4))
         self.x += move_distance[self.feet_direction][0]
         self.y += move_distance[self.feet_direction][1]
+        # 몸의 커서를 따라감
+        self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) + math.pi
+        #point_distance = math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2)
+        #self.body_rad -= math.atan2(point_distance, 400)
 
     def action(self):
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
@@ -161,19 +143,14 @@ class Character:
             self.body_status = 1
 
     def update(self):
-        self.move()
         self.action()
+        self.move()
         self.attack()
-        # 몸의 커서를 따라감
-        self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) - math.pi / 2
-        point_distance = math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2)
-        self.body_rad -= math.atan2(point_distance, 400)
+        self.main_weapon.update()
 
         self.animation()
 
-        for i in range(0, 30):
-            if self.check_bullets[i] == True:
-                self.bullets[i].update()
+
 
     def events_handler(self, event):
         if event.type == SDL_KEYDOWN:
@@ -227,9 +204,7 @@ class Character:
 
         self.cursur.render()
 
-        for i in range(0, 30):
-            if self.check_bullets[i] == True:
-                self.bullets[i].render()
+        self.main_weapon.render()
 
 
 stage = load_image('image/stage/stage_test.png')
