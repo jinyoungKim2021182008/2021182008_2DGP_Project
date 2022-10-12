@@ -3,16 +3,12 @@ import math
 import weapon
 
 CHARACTER_WIDTH, CHARACTER_HEIGHT = 50, 50
-STAGE_WIDTH, STAGE_LENGTH = 800, 800
 SCENE_WIDTH, SCENE_HEIGHT = 800, 800
-
-game_running = True
-open_canvas(STAGE_WIDTH, STAGE_LENGTH)
 
 class Cursur:
     def __init__(self):
         self.cursur_image = load_image('image/character/cursur.png')
-        self.x, self.y = SCENE_WIDTH // 2, SCENE_HEIGHT // 2
+        self.x, self.y = 0, 0
         hide_cursor()
         pass
 
@@ -127,9 +123,9 @@ class Character:
         self.x += move_distance[self.feet_direction][0]
         self.y += move_distance[self.feet_direction][1]
         # 몸의 커서를 따라감
-        self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) + math.pi
-        #point_distance = math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2)
-        #self.body_rad -= math.atan2(point_distance, 400)
+        self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) - math.pi / 2
+        point_distance = math.sqrt(math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2))
+        self.body_rad -= math.atan2(point_distance, 10)
 
     def action(self):
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
@@ -182,7 +178,7 @@ class Character:
                 self.run_key = False
 
         elif event.type == SDL_MOUSEMOTION:
-            player.cursur.set_pos(event.x, SCENE_HEIGHT - 1 - event.y)
+            self.cursur.set_pos(event.x, SCENE_HEIGHT - 1 - event.y)
 
         elif event.type == SDL_MOUSEBUTTONDOWN:
             self.shoot_key = True
@@ -205,34 +201,3 @@ class Character:
         self.cursur.render()
 
         self.main_weapon.render()
-
-
-stage = load_image('image/stage/stage_test.png')
-player = Character(STAGE_WIDTH // 2, STAGE_LENGTH // 2)
-
-game_running = True
-
-def input_manager():
-    global game_running
-    events = get_events()
-    for event in events:
-        if event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_running = False
-        player.events_handler(event)
-
-def render_scene():
-    clear_canvas()
-    stage.draw(STAGE_WIDTH // 2, STAGE_LENGTH // 2, STAGE_WIDTH, STAGE_LENGTH)
-    player.render()
-    update_canvas()
-
-def game_update():
-    input_manager()
-    player.update()
-    render_scene()
-    delay(0.03)
-
-while game_running == True:
-    game_update()
-
-close_canvas()
