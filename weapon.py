@@ -1,6 +1,8 @@
 from pico2d import *
 import math
 import random
+from game_constant import *
+
 
 class Bullet:
     def __init__(self, damage):
@@ -8,8 +10,8 @@ class Bullet:
         self.rad = 0
         self.damage = damage
         self.bullet_image = load_image('image/character/bullet.png')
-        self.bullet_image_width = self.bullet_image.w
-        self.bullet_image_height = self.bullet_image.h
+        self.bullet_image_width = self.bullet_image.w   # 50
+        self.bullet_image_height = self.bullet_image.h  # 2
 
     def setBullet(self, x, y, rad):
         self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
@@ -24,6 +26,15 @@ class Bullet:
                                               self.x, self.y, self.bullet_image_width, self.bullet_image_height)
 
 
+    def check_delete(self):
+        if self.x < -100 or self.x > SCENE_WIDTH + 100:
+            return True
+        if self.y < -100 or self.y > SCENE_HEIGHT + 100:
+            return True
+
+        return False
+
+
 class Rifle_1:  # like ak47
     def __init__(self, state):
         # 탄약
@@ -35,7 +46,7 @@ class Rifle_1:  # like ak47
         self.add_recoil, self.mul_recoil = 0.1, 1.2
 
         # 상태
-        self.state = state      # false = dropped, true = on character
+        self.state = state  # false = dropped, true = on character
 
         # 총알
         self.damage = 45
@@ -67,7 +78,11 @@ class Rifle_1:  # like ak47
 
         for i in range(0, 30):
             if self.check_bullets[i]:
-                self.bullets[i].update()
+                if self.bullets[i].check_delete():
+                    print(1)
+                    self.check_bullets[i] = False
+                else:
+                    self.bullets[i].update()
 
     def reload(self):
         if self.ammo_max <= 0: return
@@ -95,4 +110,3 @@ class Grenade:
 
 class Knife:
     pass
-

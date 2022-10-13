@@ -1,9 +1,7 @@
 from pico2d import *
 import math
 import weapon
-
-CHARACTER_WIDTH, CHARACTER_HEIGHT = 50, 50
-SCENE_WIDTH, SCENE_HEIGHT = 800, 800
+from game_constant import *
 
 class Cursur:
     def __init__(self):
@@ -89,14 +87,10 @@ class Character:
             if self.body_reload_frame == 1:
                 self.body_frame += 1
             if self.body_frame >= 19:
+                self.main_weapon.reload()
                 self.reload_key = False
         else:
             self.body_frame = (self.body_frame + 1) % 20
-
-
-    def attack(self):
-        if self.body_status == 3 and self.body_frame == 0:
-            self.main_weapon.shoot(self.x, self.y, self.body_rad)
 
     def move(self):
         # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
@@ -138,10 +132,12 @@ class Character:
         else:
             self.body_status = 1
 
+        if self.body_status == 3 and self.body_frame == 0:
+            self.main_weapon.shoot(self.x, self.y, self.body_rad)
+
     def update(self):
         self.action()
         self.move()
-        self.attack()
         self.main_weapon.update()
 
         self.animation()

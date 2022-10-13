@@ -1,19 +1,16 @@
 import pico2d
-import stage
-import character
+import stage_manager
+from game_constant import *
 
-SCENE_WIDTH, SCENE_HEIGHT = 800, 800
 game_running = True
-map = None
-player = None
+stage = None
 
 pico2d.open_canvas(SCENE_WIDTH, SCENE_HEIGHT)
 
 def set_game():
-    global player, map
-    map = stage.Stage()
-    player = character.Character(SCENE_WIDTH // 2, SCENE_HEIGHT // 2)
-    map.setStage(-1)    # test_stage
+    global stage
+    stage = stage_manager.Stage()
+    stage.setStage(-1)    # test_stage
 
 def game_input():
     global game_running
@@ -21,17 +18,16 @@ def game_input():
     for event in events:
         if event.type == pico2d.SDL_KEYDOWN and event.key == pico2d.SDLK_ESCAPE:
             game_running = False
-        player.events_handler(event)
+        stage.events_handler(event)
 
 def render_scene():
     pico2d.clear_canvas()
-    map.render()
-    player.render()
+    stage.render()
     pico2d.update_canvas()
 
 def game_update():
     game_input()
-    player.update()
+    stage.update()
     render_scene()
     pico2d.delay(0.03)
 
