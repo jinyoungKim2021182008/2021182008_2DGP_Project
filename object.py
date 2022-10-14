@@ -1,18 +1,28 @@
 from pico2d import *
 
 class SandBarricade:
-    def __init__(self, x, y, rad):
+    def __init__(self, x, y, degree):
         self.image = load_image('image/stage/stage_object/sand_barricade.png')
-        self.rad = rad
+        self.img = load_image('image/gp.png')
+        self.rad = math.radians(degree)
         self.y = y
         self.x = x
+        self.width = 100
+        self.height = 15
     def setpos(self, x, y, rad):
         self.rad = rad
         self.x = y
         self.y = x
 
     def render(self):
-        self.image.clip_composite_draw(0, 0, self.image.w, self.image.h, self.rad, '0', self.x, self.y, 100, 15)
+        self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
+                                       self.rad, '0', self.x, self.y, self.width, self.height)
+        d = (self.width / 2) - 10
+        rx, ry = math.cos(self.rad), math.sin(self.rad)
+        x1, y1 = self.x + d * rx, self.y + d * ry
+        x2, y2 = self.x - d * rx, self.y - d * ry
+        self.img.draw(x1, y1)
+        self.img.draw(x2, y2)
 
 class SteelBarricade:
     def __init__(self):

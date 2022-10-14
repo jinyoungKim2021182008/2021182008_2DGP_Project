@@ -72,6 +72,8 @@ class Character:
         """
         self.main_weapon = weapon.Rifle_1(True)
 
+        self.img = load_image('image/rp.png')
+
     def animation(self):
         # feet animation
         if self.feet_status == 0:
@@ -125,7 +127,7 @@ class Character:
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         if self.reload_key:
             self.body_status = 2
-        elif self.shoot_key:
+        elif self.shoot_key and self.main_weapon.magazine_capacity > 0:
             self.body_status = 3
         elif self.feet_status == 0:
             self.body_status = 0
@@ -197,3 +199,5 @@ class Character:
         self.cursur.render()
 
         self.main_weapon.render()
+
+        self.img.draw(self.x, self.y)
