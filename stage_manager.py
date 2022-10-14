@@ -2,6 +2,8 @@ from pico2d import *
 import object
 import character
 from game_constant import *
+import weapon
+
 
 class Stage:
     def __init__(self):
@@ -21,7 +23,9 @@ class Stage:
             self.stage_w, self.stage_h = 800, 800
             # set object
             self.objects.append(object.SandBarricade(100, 100, 0))
-            self.objects.append(object.SandBarricade(500, 500, 50))
+            self.objects.append(object.SandBarricade(500, 500, 45))
+            self.objects.append(object.SandBarricade(300, 400, 90))
+            self.objects.append(object.SandBarricade(400, 300, 0))
             # set player
             self.player = character.Character(self.stage_w // 2, self.stage_h // 2)
             # set enemies
@@ -48,6 +52,7 @@ class Stage:
 
     def events_handler(self, event):
         self.player.events_handler(event)
+
     def update(self):
         self.player.update()
 
@@ -57,6 +62,8 @@ class Stage:
                     if bullet_crash(self.player.main_weapon.bullets[i], object):
                         self.player.main_weapon.check_bullets[i] = False
 
+        for object in self.objects:
+            crashCharacter2Object(self.player, object)
 
     def render(self):
         # draw back
