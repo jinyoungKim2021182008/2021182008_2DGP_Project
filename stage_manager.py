@@ -11,8 +11,8 @@ class Stage:
         self.enemies = []
         self.player = None
         self.stage_images = (load_image('image/stage/stage_test.png'),
-                             load_image('image/stage/stage_test.png'),
-                             load_image('image/stage/stage_test.png'))
+                             load_image('image/stage/stage_jungle.png'),
+                             load_image('image/stage/stage_desert.png'))
         self.stage_num = 0
         self.stage_w, self.stage_h = None, None
 
