@@ -34,7 +34,6 @@ class Bullet:
 
         return False
 
-
 class Rifle_1:  # like ak47
     def __init__(self, state):
         # 탄약
@@ -79,7 +78,6 @@ class Rifle_1:  # like ak47
         for i in range(0, 30):
             if self.check_bullets[i]:
                 if self.bullets[i].check_delete():
-                    print(1)
                     self.check_bullets[i] = False
                 else:
                     self.bullets[i].update()
