@@ -52,6 +52,7 @@ class Rifle_1:  # like ak47
         self.bullets = [Bullet(self.damage) for i in range(30)]
         self.check_bullets = [False for i in range(30)]
         self.next_bullet_index = 0
+        self.shake = 0
 
     def shoot(self, x, y, rad):
         if self.magazine_capacity <= 0: return
@@ -72,8 +73,15 @@ class Rifle_1:  # like ak47
 
     def update(self):
         self.recoil = (self.recoil - 0.02) * 0.95
-        if self.recoil < 0:
-            self.recoil = 0
+        if self.shake == 2:
+            if self.recoil < self.mul_recoil / 3:
+                self.recoil = self.mul_recoil / 3
+        if self.shake == 1:
+            if self.recoil < self.mul_recoil / 6:
+                self.recoil = self.mul_recoil / 6
+        elif self.shake == 0:
+            if self.recoil < 0:
+                self.recoil = 0
 
         for i in range(0, 30):
             if self.check_bullets[i]:
