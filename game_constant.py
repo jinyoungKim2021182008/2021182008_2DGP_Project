@@ -2,13 +2,18 @@ import math
 import object
 import character
 from pico2d import *
+
 SCENE_WIDTH, SCENE_HEIGHT = 800, 800
 
 CHARACTER_WIDTH, CHARACTER_HEIGHT = 50, 50
+CHARACTER_WALK_SPEED, CHARACTER_RUN_SPEED = 2, 3.5
+
+
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
 
 def bullet_crash(bullet, other):
     if type(other).__name__ == 'SandBarricade':
@@ -20,6 +25,7 @@ def bullet_crash(bullet, other):
 
     return False
 
+
 def crashCharacter2Object(character, object):
     d = (object.width / 2) - 20
     dis = object.height + 10
@@ -27,39 +33,56 @@ def crashCharacter2Object(character, object):
     rx, ry = math.cos(rad), math.sin(rad)
     x1, y1 = object.x + d * rx, object.y + d * ry
     x2, y2 = object.x - d * rx, object.y - d * ry
-    if crashCircle2Line(character.x, character.y, dis, x1, y1, x2, y2, rad):
-        
+
+    return_crash = crashCircle2Line(character.x, character.y, dis, x1, y1, x2, y2, rad)
+
+    if return_crash > 0:
+        if character.feet_dir_x == 1:  # right move
+            character.x -= character.speed
+        elif character.feet_dir_x == -1:  # left move
+            character.x += character.speed
+        if character.feet_dir_y == 1:  # up move
+            character.y -= character.speed
+        elif character.feet_dir_y == -1:  # down move
+            character.y += character.speed
+
+    if return_crash == 1:
+        if character.feet_dir_x == 1:  # right move
+            character.x += character.speed * math.cos(rad)
+            if rad != math.pi / 2 and rad != math.pi / 2 * 3:
+                character.y += character.speed * math.sin(rad)
+        elif character.feet_dir_x == -1:  # left move
+            character.x -= character.speed * math.cos(rad)
+            if rad != math.pi / 2 and rad != math.pi / 2 * 3:
+                character.y -= character.speed * math.sin(rad)
+        if character.feet_dir_y == 1:  # up move
+            if rad != 0 and rad != math.pi:
+                character.x += character.speed * math.cos(rad)
+            character.y += character.speed * math.sin(rad)
+        elif character.feet_dir_y == -1:  # down move
+            if rad != 0 and rad != math.pi:
+                character.x -= character.speed * math.cos(rad)
+            character.y -= character.speed * math.sin(rad)
+
+    elif return_crash == 2 or return_crash == 3:
+        pass
 
 
 def crashCircle2Line(cx, cy, r, x1, y1, x2, y2, rad):
-    """p = (pow(x1 - y1, 2) + pow(x2 - y2, 2))
-    if p == 0:
-        lt = 0
-    else:
-        lt = (x1*y1 - y1*cx - x1*x1 + x1*cx + x2*y2 - y2*cy + x2*cy - x2*x2) / -p
-
-
-    if 0 < lt < 1:
-        lx = (1 - lt) * x1 + lt * x2
-        ly = (1 - lt) * y1 + lt * y2
-        val = pow(lx - cx, 2) + pow(ly - cy, 2)
-        if val <= r * r:
-            return True
-    else:"""
-    drad = rad + math.pi / 2
-    rx, ry = math.cos(drad), math.sin(drad)
+    d_rad = rad + math.pi / 2
+    rx, ry = math.cos(d_rad), math.sin(d_rad)
     cx1, cy1 = cx + r * rx, cy + r * ry
     cx2, cy2 = cx - r * rx, cy - r * ry
     if crashLine2Line(Point(cx1, cy1), Point(cx2, cy2), Point(x1, y1), Point(x2, y2)):
-        return True
+        return 1
     val = pow(x1 - cx, 2) + pow(y1 - cy, 2)
     if val <= r * r:
-        return True
+        return 2
     val = pow(x2 - cx, 2) + pow(y2 - cy, 2)
     if val <= r * r:
-        return True
+        return 3
 
-    return False
+    return -1
 
 
 def crashLine2Rect(x1, y1, x2, y2, rx, ry, rad, rw, rh):
@@ -104,3 +127,16 @@ def CCW(p1, p2, p3):
         return 0
     else:
         return -1
+
+
+def returnGT(a, b, bool):
+    if bool:
+        if a >= b:
+            return a
+        else:
+            return b
+    else:
+        if a >= b:
+            return b
+        else:
+            return a
