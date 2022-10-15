@@ -16,13 +16,14 @@ class Cursur:
         self.cursur_image.draw(self.x, self.y, 30, 30)
 
 class Character:
-    def __init__(self, x, y):
+    def __init__(self, x, y, hp, armor):
         """
         캐릭터 위치 및 정보
         """
         self.x, self.y = x, y
-        self.walk_speed, self.run_speed = 2.0, 3.5
-
+        self.speed = 0
+        self.hp = hp
+        self.armor = armor
         """
         캐릭터 발  
         """
@@ -95,35 +96,45 @@ class Character:
             self.body_frame = (self.body_frame + 1) % 20
 
     def move(self):
-        # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
-        if self.feet_dir_x == 0 and self.feet_dir_y == 0:   # idle
-            self.feet_status = 0
-        elif self.run_key:
-            self.feet_status = 2
-        else:
-            self.feet_status = 1
-
-        speed = 0
         if self.feet_status == 1:
-            speed = self.walk_speed
+            self.speed = CHARACTER_WALK_SPEED
         elif self.feet_status == 2:
-            speed = self.run_speed
+            self.speed = CHARACTER_RUN_SPEED
+        else:
+            self.speed = 0
 
         # 0 = right, 1 = ru, 2 = up, 3 = lu, 4 = left, 5 = ld, 6 = down, 7 = rd
         direction = ((3, 2, 1),
                      (4, 0, 0),
                      (5, 6, 7))
         self.feet_direction = direction[1 - self.feet_dir_y][1 + self.feet_dir_x]
-        move_distance = ((speed, 0), (speed / 1.4, speed / 1.4), (0, speed), (-speed / 1.4, speed / 1.4),
-                         (-speed, 0), (-speed / 1.4, -speed / 1.4), (0, -speed), (speed / 1.4, -speed / 1.4))
+
+        if self.feet_direction % 2 == 1:
+            self.speed /= 1.4
+
+        move_distance = ((self.speed, 0), (self.speed, self.speed), (0, self.speed), (-self.speed, self.speed),
+                         (-self.speed, 0), (-self.speed, -self.speed), (0, -self.speed), (self.speed, -self.speed))
+
         self.x += move_distance[self.feet_direction][0]
         self.y += move_distance[self.feet_direction][1]
+
         # 몸의 커서를 따라감
         self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) - math.pi / 2
         point_distance = math.sqrt(math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2))
         self.body_rad -= math.atan2(point_distance, 10)
 
     def action(self):
+        # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
+        if self.feet_dir_x == 0 and self.feet_dir_y == 0:  # idle
+            self.feet_status = 0
+            self.main_weapon.shake = 0
+        elif self.run_key:
+            self.feet_status = 2
+            self.main_weapon.shake = 2
+        else:
+            self.feet_status = 1
+            self.main_weapon.shake = 1
+
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         if self.reload_key:
             self.body_status = 2
