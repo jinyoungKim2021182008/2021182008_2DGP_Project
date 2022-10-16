@@ -27,7 +27,7 @@ class Stage:
             self.objects.append(object.SandBarricade(300, 400, 90))
             self.objects.append(object.SandBarricade(400, 300, 0))
             # set player
-            self.player = character.Character(self.stage_w // 2, self.stage_h // 2)
+            self.player = character.Character(self.stage_w // 2, self.stage_h // 2, 100, 100)
             # set enemies
 
         elif num == 0:  # jungle_stage
@@ -55,6 +55,7 @@ class Stage:
 
     def update(self):
         self.player.update()
+        self.player.crashCharacter2Stage(self.stage_w, self.stage_h)
 
         for i in range(0, 30):
             if self.player.main_weapon.check_bullets[i]:

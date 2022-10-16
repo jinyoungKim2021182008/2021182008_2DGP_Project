@@ -25,7 +25,6 @@ def bullet_crash(bullet, other):
 
     return False
 
-
 def crashCharacter2Object(character, object):
     d = (object.width / 2) - 20
     dis = object.height + 10

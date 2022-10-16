@@ -95,6 +95,17 @@ class Character:
         else:
             self.body_frame = (self.body_frame + 1) % 20
 
+    def crashCharacter2Stage(self, stage_w, stage_h):
+        r = CHARACTER_WIDTH // 2
+        if self.x - r < 0:
+            self.x = r
+        elif self.x + r > stage_w:
+            self.x = stage_w - r
+        if self.y - r < 0:
+            self.y = r
+        elif self.y + r > stage_h:
+            self.y = stage_h - r
+
     def move(self):
         if self.feet_status == 1:
             self.speed = CHARACTER_WALK_SPEED
