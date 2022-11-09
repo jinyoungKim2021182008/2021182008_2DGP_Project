@@ -1,21 +1,244 @@
 from pico2d import *
 import math
+
+import game_constant
+import game_framework
 import weapon
 from game_constant import *
 
-class Cursur:
+WD, SD, AD, DD, WU, SU, AU, DU, LSHD, LSHU, LMD, LMU, RD, TIMER, IGNORE = range(15)
+event_name = ['WD', 'SD', 'AD', 'DD', 'WU', 'SU', 'AU', 'DU', 'LSHD', 'LSHU',
+              'LEFT_MOUSE_DOWN', 'LEFT_MOUSE_UP', 'RD', 'TIMER', 'IGNORE']
+
+key_event_table = {
+    (SDL_KEYDOWN, SDLK_w): WD,
+    (SDL_KEYDOWN, SDLK_s): SD,
+    (SDL_KEYDOWN, SDLK_a): AD,
+    (SDL_KEYDOWN, SDLK_d): DD,
+    (SDL_KEYUP, SDLK_w): WU,
+    (SDL_KEYUP, SDLK_s): SU,
+    (SDL_KEYUP, SDLK_a): AU,
+    (SDL_KEYUP, SDLK_d): DU,
+    (SDL_KEYDOWN, SDLK_LSHIFT): LSHD,
+    (SDL_KEYUP, SDLK_LSHIFT): LSHU,
+    (SDL_MOUSEBUTTONDOWN, None): LMD,
+    (SDL_MOUSEBUTTONUP, None): LMU,
+    (SDL_KEYDOWN, SDLK_r): RD
+}
+
+
+class IDLE:
+    ACTION_PER_TIME = 20
+    FRAMES_PER_ACTION = 20
+
+    @staticmethod
+    def enter(self, event):
+        self.feet_frame = 0
+        self.fs = 0
+
+        self.weapons[self.select_weapon].shake = 0
+
+        if self.action_state == IDLE:
+            self.bs = 0
+            self.body_frame = 0
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        if self.action_state == IDLE:
+            self.body_frame = (self.body_frame + IDLE.ACTION_PER_TIME * game_framework.frame_time) % IDLE.FRAMES_PER_ACTION
+
+
+PIXEL_PER_METER = 15.0
+WALK_SPEED_KMPH = 15.0
+WALK_SPEED_MPM = (WALK_SPEED_KMPH * 1000.0 / 60.0)
+WALK_SPEED_MPS = (WALK_SPEED_MPM / 60.0)
+WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
+
+
+class WALK:
+    ACTION_PER_TIME = 20
+    FRAMES_PER_ACTION = 20
+
+    @staticmethod
+    def enter(self, event):
+        self.feet_frame = 0
+        self.fs = 1
+        if event == WD or event == SU:
+            self.feet_dir_y += 1
+        if event == SD or event == WU:
+            self.feet_dir_y -= 1
+        if event == AD or event == DU:
+            self.feet_dir_x -= 1
+        if event == DD or event == AU:
+            self.feet_dir_x += 1
+
+        self.weapons[self.select_weapon].shake = 1
+
+        if self.action_state == IDLE:
+            self.bs = 1
+            self.body_frame = 0
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        if self.feet_dir_x == 0 and self.feet_dir_y == 0:
+            self.change_state(self.move_state, IDLE)
+        elif self.feet_dir_x == 1 and self.feet_dir_y == 1:
+            self.x += self.feet_dir_x * WALK_SPEED_PPS * game_framework.frame_time / 1.4
+            self.y += self.feet_dir_y * WALK_SPEED_PPS * game_framework.frame_time / 1.4
+        else:
+            self.x += self.feet_dir_x * WALK_SPEED_PPS * game_framework.frame_time
+            self.y += self.feet_dir_y * WALK_SPEED_PPS * game_framework.frame_time
+        self.feet_frame = (self.feet_frame + 1) % 20
+        self.set_feet_dir()
+
+        if self.action_state == IDLE:
+            self.body_frame = (
+                                          self.body_frame + IDLE.ACTION_PER_TIME * game_framework.frame_time) % IDLE.FRAMES_PER_ACTION
+
+
+RUN_SPEED_KMPH = 30.0
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+
+class RUN:
+    ACTION_PER_TIME = 30
+    FRAMES_PER_ACTION = 20
+
+    @staticmethod
+    def enter(self, event):
+        self.feet_frame = 0
+        self.fs = 2
+        if event == WD or event == SU:
+            self.feet_dir_y += 1
+        if event == SD or event == WU:
+            self.feet_dir_y -= 1
+        if event == AD or event == DU:
+            self.feet_dir_x -= 1
+        if event == DD or event == AU:
+            self.feet_dir_x += 1
+
+        self.weapons[self.select_weapon].shake = 2
+
+        if self.action_state == IDLE:
+            self.bs = 1
+            self.body_frame = 0
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        if self.feet_dir_x == 0 and self.feet_dir_y == 0:
+            self.change_state(self.move_state, IDLE)
+        elif self.feet_dir_x == 1 and self.feet_dir_y == 1:
+            self.x += self.feet_dir_x * RUN_SPEED_PPS * game_framework.frame_time / 1.4
+            self.y += self.feet_dir_y * RUN_SPEED_PPS * game_framework.frame_time / 1.4
+        else:
+            self.x += self.feet_dir_x * RUN_SPEED_PPS * game_framework.frame_time
+            self.y += self.feet_dir_y * RUN_SPEED_PPS * game_framework.frame_time
+        self.feet_frame = (self.feet_frame + 1) % 20
+        self.set_feet_dir()
+
+        if self.action_state == IDLE:
+            self.body_frame = (
+                                          self.body_frame + IDLE.ACTION_PER_TIME * game_framework.frame_time) % IDLE.FRAMES_PER_ACTION
+
+
+class SHOOT:
+    ACTION_PER_TIME = 30
+    FRAMES_PER_ACTION = 3
+
+    @staticmethod
+    def enter(self, event):
+        self.bs = 3
+        self.body_frame = 0
+        self.timer = 0.1
+        pass
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        self.body_frame = (self.body_frame + SHOOT.ACTION_PER_TIME * game_framework.frame_time) % SHOOT.FRAMES_PER_ACTION
+        self.timer -= game_framework.frame_time
+        if self.timer <= 0:
+            if self.weapons[self.select_weapon].magazine_capacity == 0:
+                self.add_event(LMU)
+            else:
+                self.add_event(TIMER)
+
+
+class RELOAD:
+    ACTION_PER_TIME = 10
+    FRAMES_PER_ACTION = 20
+
+    @staticmethod
+    def enter(self, event):
+        self.bs = 2
+        self.body_frame = 0
+        self.timer = 2
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        self.body_frame = (
+                                      self.body_frame + RELOAD.ACTION_PER_TIME * game_framework.frame_time) % RELOAD.FRAMES_PER_ACTION
+        self.timer -= game_framework.frame_time
+        if self.timer <= 0:
+            self.add_event(TIMER)
+
+
+next_move_state = {
+    IDLE: {WD: WALK, SD: WALK, AD: WALK, DD: WALK, WU: WALK, SU: WALK, AU: WALK, DU: WALK, LSHD: RUN, LSHU: IGNORE},
+    WALK: {WD: WALK, SD: WALK, AD: WALK, DD: WALK, WU: WALK, SU: WALK, AU: WALK, DU: WALK, LSHD: RUN, LSHU: IGNORE},
+    RUN: {WD: RUN, SD: RUN, AD: RUN, DD: RUN, WU: RUN, SU: RUN, AU: RUN, DU: RUN, LSHD: RUN, LSHU: WALK}
+}
+
+next_action_state = {
+    IDLE: {LMD: SHOOT, LMU: IGNORE, RD: RELOAD, TIMER: IGNORE},
+    SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: SHOOT},
+    RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
+}
+
+
+class Cursor:
     def __init__(self):
-        self.cursur_image = load_image('image/character/cursur.png')
+        self.cursor_image = load_image('image/character/cursor.png')
         self.x, self.y = 0, 0
         hide_cursor()
         pass
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
-    def render(self):
-        self.cursur_image.draw(self.x, self.y, 30, 30)
+
+    def draw(self):
+        self.cursor_image.draw(self.x, self.y, 30, 30)
+
 
 class Character:
+    feet_image = None
+    feet_image_w = []
+    feet_image_h = []
+    body_image = None
+    body_image_w = []
+    body_image_h = []
+
     def __init__(self, x, y, hp, armor):
         """
         캐릭터 위치 및 정보
@@ -27,199 +250,113 @@ class Character:
         """
         캐릭터 발  
         """
-        # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
-        self.feet_image = (load_image('image/character/feet/idle.png'),             # cnt = 1
-                           load_image('image/character/feet/walk.png'),             # cnt = 20
-                           load_image('image/character/feet/run.png'),              # cnt = 20
-                           load_image('image/character/feet/strafe_left.png'),      # cnt = 20
-                           load_image('image/character/feet/strafe_right.png'))     # cnt = 20
-        self.feet_image_width = (self.feet_image[0].w, self.feet_image[1].w // 20, self.feet_image[2].w // 20, self.feet_image[3].w // 20, self.feet_image[4].w // 20)
-        self.feet_image_height = (self.feet_image[0].h, self.feet_image[1].h, self.feet_image[2].h, self.feet_image[3].h, self.feet_image[4].h)
-        self.feet_status = 0    # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
-        self.feet_direction = 0
-        self.feet_dir_x = 0
-        self.feet_dir_y = 0
-        self.feet_frame = 0
+        # 0 = idle, 1 = walk, 2 = run
+        if Character.feet_image is None:
+            Character.feet_image = [load_image('image/character/feet/idle.png'),  # cnt = 1
+                                    load_image('image/character/feet/walk.png'),  # cnt = 20
+                                    load_image('image/character/feet/run.png')]  # cnt = 20
+            Character.feet_image_w = [self.feet_image[0].w, self.feet_image[1].w // 20, self.feet_image[2].w // 20]
+            Character.feet_image_h = [self.feet_image[0].h, self.feet_image[1].h, self.feet_image[2].h]
 
+        self.feet_direction = 0
+        self.feet_dir_x, self.feet_dir_y = 0, 0
+        self.feet_frame = 0
+        self.fs = 0
         """
         캐릭터 몸  
         """
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
-        self.body_image = (load_image('image/character/body/idle.png'),             # cnt = 20
-                           load_image('image/character/body/move.png'),             # cnt = 20
-                           load_image('image/character/body/reload.png'),           # cnt = 20
-                           load_image('image/character/body/shoot.png'))            # cnt = 3
-        self.body_image_width = (self.body_image[0].w // 20, self.body_image[1].w // 20, self.body_image[2].w // 20, self.body_image[3].w // 3)
-        self.body_image_height = (self.body_image[0].h, self.body_image[1].h, self.body_image[2].h, self.body_image[3].h)
-        self.body_status = 0
+        if Character.body_image is None:
+            Character.body_image = [load_image('image/character/body/idle.png'),  # cnt = 20
+                                    load_image('image/character/body/move.png'),  # cnt = 20
+                                    load_image('image/character/body/reload.png'),  # cnt = 20
+                                    load_image('image/character/body/shoot.png')]  # cnt = 3
+            Character.body_image_w = [self.body_image[0].w // 20, self.body_image[1].w // 20,
+                                      self.body_image[2].w // 20, self.body_image[3].w // 3]
+            Character.body_image_h = [self.body_image[0].h, self.body_image[1].h,
+                                      self.body_image[2].h, self.body_image[3].h]
+
         self.body_frame = 0
         self.body_reload_frame = 0
         self.body_rad = 0
-
-        """
-        조작키
-        """
-        self.run_key = False
-        self.shoot_key = False
-        self.reload_key = False
-
+        self.bs = 0
         """
         커서
         """
-        self.cursur = Cursur()
-
+        self.cursor = Cursor()
         """
         무기
         """
-        self.main_weapon = weapon.Rifle_1(True)
+        self.weapons = [weapon.Gun(True), weapon.Gun(True), weapon.Gun(True)]
+        self.select_weapon = 0
 
-        self.img = load_image('image/rp.png')
-
-    def animation(self):
-        # feet animation
-        if self.feet_status == 0:
-            self.feet_frame = 0
-        else:
-            self.feet_frame = (self.feet_frame + 1) % 20
-
-        # body animation
-        if self.body_status == 3:
-            self.body_frame = (self.body_frame + 1) % 3
-        elif self.reload_key:
-            self.body_reload_frame = (self.body_reload_frame + 1) % 2
-            if self.body_reload_frame == 1:
-                self.body_frame += 1
-            if self.body_frame >= 19:
-                self.main_weapon.reload()
-                self.reload_key = False
-        else:
-            self.body_frame = (self.body_frame + 1) % 20
-
-    def crashCharacter2Stage(self, stage_w, stage_h):
-        r = CHARACTER_WIDTH // 2
-        if self.x - r < 0:
-            self.x = r
-        elif self.x + r > stage_w:
-            self.x = stage_w - r
-        if self.y - r < 0:
-            self.y = r
-        elif self.y + r > stage_h:
-            self.y = stage_h - r
-
-    def move(self):
-        if self.feet_status == 1:
-            self.speed = CHARACTER_WALK_SPEED
-        elif self.feet_status == 2:
-            self.speed = CHARACTER_RUN_SPEED
-        else:
-            self.speed = 0
-
-        # 0 = right, 1 = ru, 2 = up, 3 = lu, 4 = left, 5 = ld, 6 = down, 7 = rd
-        direction = ((3, 2, 1),
-                     (4, 0, 0),
-                     (5, 6, 7))
-        self.feet_direction = direction[1 - self.feet_dir_y][1 + self.feet_dir_x]
-
-        if self.feet_direction % 2 == 1:
-            self.speed /= 1.4
-
-        move_distance = ((self.speed, 0), (self.speed, self.speed), (0, self.speed), (-self.speed, self.speed),
-                         (-self.speed, 0), (-self.speed, -self.speed), (0, -self.speed), (self.speed, -self.speed))
-
-        self.x += move_distance[self.feet_direction][0]
-        self.y += move_distance[self.feet_direction][1]
-
-        # 몸의 커서를 따라감
-        self.body_rad = math.atan2(self.y - self.cursur.y, self.x - self.cursur.x) - math.pi / 2
-        point_distance = math.sqrt(math.pow(self.x - self.cursur.x, 2) + math.pow(self.y - self.cursur.y, 2))
-        self.body_rad -= math.atan2(point_distance, 10)
-
-    def action(self):
-        # 0 = idle, 1 = walk, 2 = run, 3 = left_strafe, 4 = right_strafe
-        if self.feet_dir_x == 0 and self.feet_dir_y == 0:  # idle
-            self.feet_status = 0
-            self.main_weapon.shake = 0
-        elif self.run_key:
-            self.feet_status = 2
-            self.main_weapon.shake = 2
-        else:
-            self.feet_status = 1
-            self.main_weapon.shake = 1
-
-        # 0 = idle, 1 = move, 2 = reload, 3 = shoot
-        if self.reload_key:
-            self.body_status = 2
-        elif self.shoot_key and self.main_weapon.magazine_capacity > 0:
-            self.body_status = 3
-        elif self.feet_status == 0:
-            self.body_status = 0
-        else:
-            self.body_status = 1
-
-        if self.body_status == 3 and self.body_frame == 0:
-            self.main_weapon.shoot(self.x, self.y, self.body_rad)
+        self.event_que = []
+        self.move_state = IDLE
+        self.action_state = IDLE
+        self.move_state.enter(self, None)
 
     def update(self):
-        self.action()
-        self.move()
-        self.main_weapon.update()
+        self.move_state.do(self)
+        if self.action_state != IDLE:
+            self.action_state.do(self)
 
-        self.animation()
+        if self.event_que:
+            event = self.event_que.pop()
+            if WD <= event <= LSHU:
+                if next_move_state[self.move_state][event] != IGNORE:
+                    self.move_state.exit(self, event)
+                    try:
+                        self.move_state = next_move_state[self.move_state][event]
+                    except KeyError:
+                        print(f'ERROR: State {self.move_state.__name__} Event {event_name[event]}')
+                    self.move_state.enter(self, event)
+            else:
+                if next_action_state[self.action_state][event] != IGNORE:
+                    self.action_state.exit(self, event)
+                    try:
+                        self.action_state = next_action_state[self.action_state][event]
+                    except KeyError:
+                        print(f'ERROR: State {self.action_state.__name__} Event {event_name[event]}')
+                    self.action_state.enter(self, event)
 
+        self.body_rad = math.atan2(self.y - self.cursor.y, self.x - self.cursor.x) - math.pi / 2
+        point_distance = math.sqrt(math.pow(self.x - self.cursor.x, 2) + math.pow(self.y - self.cursor.y, 2))
+        self.body_rad -= math.atan2(point_distance, 10)
 
+        self.weapons[self.select_weapon].setPos(self.x, self.y, self.body_rad)
+        self.weapons[self.select_weapon].update()
 
-    def events_handler(self, event):
-        if event.type == SDL_KEYDOWN:
-            if event.key == SDLK_d:
-                self.feet_dir_x += 1
-            elif event.key == SDLK_w:
-                self.feet_dir_y += 1
-            elif event.key == SDLK_a:
-                self.feet_dir_x -= 1
-            elif event.key == SDLK_s:
-                self.feet_dir_y -= 1
-            elif event.key == SDLK_r:
-                self.reload_key = True
-                self.body_frame = 0
-            elif event.key == SDLK_LSHIFT:
-                self.run_key = True
-                self.body_frame = 0
+    def change_state(self, state, nextstate):
+        state = nextstate
+        state.enter(self, None)
 
-        elif event.type == SDL_KEYUP:
-            if event.key == SDLK_d:
-                self.feet_dir_x -= 1
-            elif event.key == SDLK_w:
-                self.feet_dir_y -= 1
-            elif event.key == SDLK_a:
-                self.feet_dir_x += 1
-            elif event.key == SDLK_s:
-                self.feet_dir_y += 1
-            elif event.key == SDLK_LSHIFT:
-                self.run_key = False
+    def set_feet_dir(self):
+        direction = [[3, 2, 1],
+                     [4, 0, 0],
+                     [5, 6, 7]]
+        self.feet_direction = direction[1 - self.feet_dir_y][1 + self.feet_dir_x]
 
-        elif event.type == SDL_MOUSEMOTION:
-            self.cursur.set_pos(event.x, SCENE_HEIGHT - 1 - event.y)
+    def add_event(self, event):
+        self.event_que.insert(0, event)
 
-        elif event.type == SDL_MOUSEBUTTONDOWN:
-            self.shoot_key = True
+    def handle_event(self, event):
+        if (event.type, event.key) in key_event_table:
+            key_event = key_event_table[(event.type, event.key)]
+            self.add_event(key_event)
+            self.weapons[self.select_weapon].handle_event(event)
+        else:
+            if event.type == SDL_MOUSEMOTION:
+                self.cursor.set_pos(event.x, game_constant.SCENE_HEIGHT - 1 - event.y)
 
-        elif event.type == SDL_MOUSEBUTTONUP:
-            self.shoot_key = False
+    def draw(self):
+        self.feet_image[self.fs].clip_composite_draw(int(self.feet_frame) * self.feet_image_w[self.fs], 0,
+                                                     self.feet_image_w[self.fs], self.feet_image_h[self.fs],
+                                                     (math.pi / 4) * self.feet_direction, '0', self.x, self.y,
+                                                     self.feet_image_w[self.fs] // 5, self.feet_image_h[self.fs] // 5)
 
-    def render(self):
-        fs, bs = self.feet_status, self.body_status
-        self.feet_image[fs].clip_composite_draw(self.feet_frame * self.feet_image_width[fs], 0,
-                                                self.feet_image_width[fs], self.feet_image_height[fs],
-                                                (math.pi / 4) * self.feet_direction, '0', self.x, self.y,
-                                                self.feet_image_width[fs] // 5, self.feet_image_height[fs] // 5)
+        self.body_image[self.bs].clip_composite_draw(int(self.body_frame) * self.body_image_w[self.bs], 0,
+                                                     self.body_image_w[self.bs], self.body_image_h[self.bs],
+                                                     self.body_rad, '0', self.x, self.y,
+                                                     self.body_image_w[self.bs] // 5, self.body_image_h[self.bs] // 5)
 
-        self.body_image[bs].clip_composite_draw(self.body_frame * self.body_image_width[bs], 0,
-                                                self.body_image_width[bs], self.body_image_height[bs],
-                                                self.body_rad, '0', self.x, self.y,
-                                                self.body_image_width[bs] // 5, self.body_image_height[bs] // 5)
-
-        self.cursur.render()
-
-        self.main_weapon.render()
-
-        self.img.draw(self.x, self.y)
+        self.cursor.draw()

@@ -3,6 +3,7 @@ import object
 import character
 from pico2d import *
 
+
 SCENE_WIDTH, SCENE_HEIGHT = 800, 800
 
 CHARACTER_WIDTH, CHARACTER_HEIGHT = 50, 50

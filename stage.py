@@ -1,10 +1,54 @@
 from pico2d import *
+import game_world
+
 import object
-import character
+import play_state
+from character import Character
+# from weapon import Weapon
+
 from game_constant import *
-import weapon
 
+stage_images = None
+stage_num = None
+STAGE_WIDTH, STAGE_HEIGHT = 0, 0
 
+def setStage(n):
+    global stage_images, stage_num, STAGE_WIDTH, STAGE_HEIGHT
+    if stage_images is None:
+        stage_images = [load_image('image/stage/stage_test.png'),
+                        load_image('image/stage/stage_jungle.png'),
+                        load_image('image/stage/stage_desert.png')]
+        stage_num = 0
+
+    if n == -1:
+        stage_num = 0
+        STAGE_WIDTH, STAGE_HEIGHT = 800, 800
+        # stage_image
+        game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
+        # player
+        play_state.player = Character(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
+        game_world.add_object(play_state.player, game_world.PLAYER_LAYER)
+        # object
+        game_world.add_object(object.SandBarricade(100, 100, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
+        # self.objects.append(object.SandBarricade(100, 100, 0))
+        # self.objects.append(object.SandBarricade(500, 500, 45))
+        # self.objects.append(object.SandBarricade(300, 400, 90))
+        # self.objects.append(object.SandBarricade(400, 300, 0))
+
+    elif n == 0:
+        pass
+    elif n == 1:
+        pass
+    elif n == 2:
+        pass
+
+def drawStage():
+    stage_images[stage_num].draw(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, STAGE_WIDTH, STAGE_HEIGHT)
+
+"""
 class Stage:
     def __init__(self):
         self.objects = []
@@ -22,10 +66,7 @@ class Stage:
             self.stage_num = 0
             self.stage_w, self.stage_h = 800, 800
             # set object
-            self.objects.append(object.SandBarricade(100, 100, 0))
-            self.objects.append(object.SandBarricade(500, 500, 45))
-            self.objects.append(object.SandBarricade(300, 400, 90))
-            self.objects.append(object.SandBarricade(400, 300, 0))
+
             # set player
             self.player = character.Character(self.stage_w // 2, self.stage_h // 2, 100, 100)
             # set enemies
@@ -75,3 +116,4 @@ class Stage:
 
         # draw player
         self.player.render()
+"""

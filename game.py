@@ -1,5 +1,5 @@
 import pico2d
-import stage_manager
+import stage
 from game_constant import *
 
 game_running = True

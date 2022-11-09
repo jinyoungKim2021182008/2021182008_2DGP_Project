@@ -9,12 +9,16 @@ class SandBarricade:
         self.x = x
         self.width = 100
         self.height = 15
+
+    def update(self):
+        pass
+
     def setpos(self, x, y, rad):
         self.rad = rad
         self.x = y
         self.y = x
 
-    def render(self):
+    def draw(self):
         self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
                                        self.rad, '0', self.x, self.y, self.width, self.height)
         d = (self.width / 2) - 10
