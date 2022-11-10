@@ -1,10 +1,8 @@
 from pico2d import *
 import math
 
-import game_constant
 import game_framework
 import weapon
-from game_constant import *
 
 WD, SD, AD, DD, WU, SU, AU, DU, LSHD, LSHU, LMD, LMU, RD, TIMER, IGNORE = range(15)
 event_name = ['WD', 'SD', 'AD', 'DD', 'WU', 'SU', 'AU', 'DU', 'LSHD', 'LSHU',
@@ -147,12 +145,11 @@ class RUN:
         else:
             self.x += self.feet_dir_x * RUN_SPEED_PPS * game_framework.frame_time
             self.y += self.feet_dir_y * RUN_SPEED_PPS * game_framework.frame_time
-        self.feet_frame = (self.feet_frame + 1) % 20
+        self.feet_frame = (self.feet_frame + RUN.ACTION_PER_TIME * game_framework.frame_time) % RUN.FRAMES_PER_ACTION
         self.set_feet_dir()
 
         if self.action_state == IDLE:
-            self.body_frame = (
-                                          self.body_frame + IDLE.ACTION_PER_TIME * game_framework.frame_time) % IDLE.FRAMES_PER_ACTION
+            self.body_frame = (self.body_frame + RUN.ACTION_PER_TIME * game_framework.frame_time) % RUN.FRAMES_PER_ACTION
 
 
 class SHOOT:
@@ -346,7 +343,7 @@ class Character:
             self.weapons[self.select_weapon].handle_event(event)
         else:
             if event.type == SDL_MOUSEMOTION:
-                self.cursor.set_pos(event.x, game_constant.SCENE_HEIGHT - 1 - event.y)
+                self.cursor.set_pos(event.x, 800 - 1 - event.y)
 
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
@@ -428,6 +425,7 @@ class Player(Character):
         self.move_state = IDLE
         self.action_state = IDLE
         self.move_state.enter(self, None)
+
 
 class Enemy(Character):
     feet_image = None

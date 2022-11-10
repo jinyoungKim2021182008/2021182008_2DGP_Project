@@ -4,6 +4,9 @@ import random
 import game_constant
 import game_world
 import game_framework
+import stage
+import efecte
+
 
 PIXEL_PER_METER = 20.0
 BULLET_SPEED_KMPH = 250.0
@@ -11,14 +14,15 @@ BULLET_SPEED_MPM = (BULLET_SPEED_KMPH * 1000.0 / 60.0)
 BULLET_SPEED_MPS = (BULLET_SPEED_MPM / 60.0)
 BULLET_SPEED_PPS = (BULLET_SPEED_MPS * PIXEL_PER_METER)
 
+
 class Bullet:
     image = None
     image_w, image_h = None, None
 
     def __init__(self, x, y, rad, damage):
         self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
-        self.x += 5 * math.cos(rad)
-        self.y += 5 * math.sin(rad)
+        self.x += (damage - 10) * math.cos(rad)
+        self.y += (damage - 10) * math.sin(rad)
         self.dx, self.dy = self.x, self.y
         self.rad = rad
         self.damage = damage
@@ -30,14 +34,22 @@ class Bullet:
         self.dx, self.dy = self.x, self.y
         self.x += BULLET_SPEED_PPS * game_framework.frame_time * math.cos(self.rad)
         self.y += BULLET_SPEED_PPS * game_framework.frame_time * math.sin(self.rad)
-        if self.x < 0 - 25 or self.x > game_constant.SCENE_WIDTH + 25:
+        if self.x < 0 - 25 or self.x > stage.STAGE_WIDTH + 25:
             game_world.remove_object(self)
-        elif self.y < 0 - 25 or self.y > game_constant.SCENE_HEIGHT + 25:
+        elif self.y < 0 - 25 or self.y > stage.STAGE_HEIGHT + 25:
             game_world.remove_object(self)
 
     def draw(self):
         self.image.clip_composite_draw(0, 0, self.image_w, self.image_h, self.rad, '0',
                                        self.x, self.y, self.damage * 2, self.image_h)
+
+    def getLine(self):
+        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
+        return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
+
+    def collide_handle(self, other):
+        game_world.remove_object(self)
+        game_world.add_object(efecte.BulletEffect(100, 100), game_world.BULLET_EFFECT_LAYER)
 
 
 LMD, LMU, RD, TIMER, IGNORE = range(5)

@@ -1,5 +1,8 @@
 from pico2d import *
 
+import game_constant
+
+
 class SandBarricade:
     def __init__(self, x, y, degree):
         self.image = load_image('image/stage/stage_object/sand_barricade.png')
@@ -27,6 +30,12 @@ class SandBarricade:
         x2, y2 = self.x - d * rx, self.y - d * ry
         self.img.draw(x1, y1)
         self.img.draw(x2, y2)
+
+    def getRect(self):
+        return game_constant.Rect(game_constant.Point(self.x, self.y), self.width, self.height, self.rad)
+
+    def collide_handle(self, other):
+        pass
 
 class SteelBarricade:
     def __init__(self):
