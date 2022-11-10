@@ -252,9 +252,9 @@ class Character:
         """
         # 0 = idle, 1 = walk, 2 = run
         if Character.feet_image is None:
-            Character.feet_image = [load_image('image/character/feet/idle.png'),  # cnt = 1
-                                    load_image('image/character/feet/walk.png'),  # cnt = 20
-                                    load_image('image/character/feet/run.png')]  # cnt = 20
+            Character.feet_image = [load_image('image/character/player/feet/idle.png'),  # cnt = 1
+                                    load_image('image/character/player/feet/walk.png'),  # cnt = 20
+                                    load_image('image/character/player/feet/run.png')]  # cnt = 20
             Character.feet_image_w = [self.feet_image[0].w, self.feet_image[1].w // 20, self.feet_image[2].w // 20]
             Character.feet_image_h = [self.feet_image[0].h, self.feet_image[1].h, self.feet_image[2].h]
 
@@ -267,10 +267,10 @@ class Character:
         """
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         if Character.body_image is None:
-            Character.body_image = [load_image('image/character/body/idle.png'),  # cnt = 20
-                                    load_image('image/character/body/move.png'),  # cnt = 20
-                                    load_image('image/character/body/reload.png'),  # cnt = 20
-                                    load_image('image/character/body/shoot.png')]  # cnt = 3
+            Character.body_image = [load_image('image/character/player/body/idle.png'),  # cnt = 20
+                                    load_image('image/character/player/body/move.png'),  # cnt = 20
+                                    load_image('image/character/player/body/reload.png'),  # cnt = 20
+                                    load_image('image/character/player/body/shoot.png')]  # cnt = 3
             Character.body_image_w = [self.body_image[0].w // 20, self.body_image[1].w // 20,
                                       self.body_image[2].w // 20, self.body_image[3].w // 3]
             Character.body_image_h = [self.body_image[0].h, self.body_image[1].h,
@@ -287,7 +287,7 @@ class Character:
         """
         무기
         """
-        self.weapons = [weapon.Gun(True), weapon.Gun(True), weapon.Gun(True)]
+        self.weapons = [weapon.Rifle_2(True), weapon.Gun(True), weapon.Gun(True)]
         self.select_weapon = 0
 
         self.event_que = []
@@ -348,6 +348,9 @@ class Character:
             if event.type == SDL_MOUSEMOTION:
                 self.cursor.set_pos(event.x, game_constant.SCENE_HEIGHT - 1 - event.y)
 
+    def get_bb(self):
+        return self.x - 10, self.y - 10, self.x + 10, self.y + 10
+
     def draw(self):
         self.feet_image[self.fs].clip_composite_draw(int(self.feet_frame) * self.feet_image_w[self.fs], 0,
                                                      self.feet_image_w[self.fs], self.feet_image_h[self.fs],
@@ -360,3 +363,133 @@ class Character:
                                                      self.body_image_w[self.bs] // 5, self.body_image_h[self.bs] // 5)
 
         self.cursor.draw()
+        draw_rectangle(*self.get_bb())
+
+class Player(Character):
+    feet_image = None
+    feet_image_w = []
+    feet_image_h = []
+    body_image = None
+    body_image_w = []
+    body_image_h = []
+
+    def __init__(self, x, y, hp, armor):
+        """
+        캐릭터 위치 및 정보
+        """
+        self.x, self.y = x, y
+        self.speed = 0
+        self.hp = hp
+        self.armor = armor
+        """
+        캐릭터 발  
+        """
+        # 0 = idle, 1 = walk, 2 = run
+        if Player.feet_image is None:
+            Player.feet_image = [load_image('image/character/player/feet/idle.png'),  # cnt = 1
+                                 load_image('image/character/player/feet/walk.png'),  # cnt = 20
+                                 load_image('image/character/player/feet/run.png')]  # cnt = 20
+            Player.feet_image_w = [self.feet_image[0].w, self.feet_image[1].w // 20, self.feet_image[2].w // 20]
+            Player.feet_image_h = [self.feet_image[0].h, self.feet_image[1].h, self.feet_image[2].h]
+
+        self.feet_direction = 0
+        self.feet_dir_x, self.feet_dir_y = 0, 0
+        self.feet_frame = 0
+        self.fs = 0
+        """
+        캐릭터 몸  
+        """
+        # 0 = idle, 1 = move, 2 = reload, 3 = shoot
+        if Player.body_image is None:
+            Player.body_image = [load_image('image/character/player/body/idle.png'),  # cnt = 20
+                                 load_image('image/character/player/body/move.png'),  # cnt = 20
+                                 load_image('image/character/player/body/reload.png'),  # cnt = 20
+                                 load_image('image/character/player/body/shoot.png')]  # cnt = 3
+            Player.body_image_w = [self.body_image[0].w // 20, self.body_image[1].w // 20,
+                                   self.body_image[2].w // 20, self.body_image[3].w // 3]
+            Player.body_image_h = [self.body_image[0].h, self.body_image[1].h,
+                                   self.body_image[2].h, self.body_image[3].h]
+
+        self.body_frame = 0
+        self.body_reload_frame = 0
+        self.body_rad = 0
+        self.bs = 0
+        """
+        커서
+        """
+        self.cursor = Cursor()
+        """
+        무기
+        """
+        self.weapons = [weapon.Rifle_2(True), weapon.Gun(True), weapon.Gun(True)]
+        self.select_weapon = 0
+
+        self.event_que = []
+        self.move_state = IDLE
+        self.action_state = IDLE
+        self.move_state.enter(self, None)
+
+class Enemy(Character):
+    feet_image = None
+    feet_image_w = []
+    feet_image_h = []
+    body_image = None
+    body_image_w = []
+    body_image_h = []
+
+    def __init__(self, x, y, hp, armor):
+        """
+        캐릭터 위치 및 정보
+        """
+        self.x, self.y = x, y
+        self.speed = 0
+        self.hp = hp
+        self.armor = armor
+        """
+        캐릭터 발  
+        """
+        # 0 = idle, 1 = walk, 2 = run
+        if Enemy.feet_image is None:
+            Enemy.feet_image = [load_image('image/character/enemy/feet/idle.png'),  # cnt = 1
+                                load_image('image/character/enemy/feet/walk.png'),  # cnt = 20
+                                load_image('image/character/enemy/feet/run.png')]  # cnt = 20
+            Enemy.feet_image_w = [self.feet_image[0].w, self.feet_image[1].w // 20, self.feet_image[2].w // 20]
+            Enemy.feet_image_h = [self.feet_image[0].h, self.feet_image[1].h, self.feet_image[2].h]
+
+        self.feet_direction = 0
+        self.feet_dir_x, self.feet_dir_y = 0, 0
+        self.feet_frame = 0
+        self.fs = 0
+        """
+        캐릭터 몸  
+        """
+        # 0 = idle, 1 = move, 2 = reload, 3 = shoot
+        if Enemy.body_image is None:
+            Enemy.body_image = [load_image('image/character/enemy/body/idle.png'),  # cnt = 20
+                                load_image('image/character/enemy/body/move.png'),  # cnt = 20
+                                load_image('image/character/enemy/body/reload.png'),  # cnt = 20
+                                load_image('image/character/enemy/body/shoot.png')]  # cnt = 3
+            Enemy.body_image_w = [self.body_image[0].w // 20, self.body_image[1].w // 20,
+                                  self.body_image[2].w // 20, self.body_image[3].w // 3]
+            Enemy.body_image_h = [self.body_image[0].h, self.body_image[1].h,
+                                  self.body_image[2].h, self.body_image[3].h]
+
+        self.body_frame = 0
+        self.body_reload_frame = 0
+        self.body_rad = 0
+        self.bs = 0
+        """
+        커서
+        """
+        self.cursor = Cursor()
+        """
+        무기
+        """
+        self.weapons = [weapon.Rifle_2(True), weapon.Gun(True), weapon.Gun(True)]
+        self.select_weapon = 0
+
+        self.event_que = []
+        self.move_state = IDLE
+        self.action_state = IDLE
+        self.move_state.enter(self, None)
+    pass

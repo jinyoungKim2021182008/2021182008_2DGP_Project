@@ -1,4 +1,6 @@
 from pico2d import *
+
+import character
 import game_world
 
 import object
@@ -28,15 +30,13 @@ def setStage(n):
         # player
         play_state.player = Character(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
         game_world.add_object(play_state.player, game_world.PLAYER_LAYER)
+        # enemy
+        game_world.add_object(character.Enemy(200, 200, 100, 100), game_world.PLAYER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 100, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
-        # self.objects.append(object.SandBarricade(100, 100, 0))
-        # self.objects.append(object.SandBarricade(500, 500, 45))
-        # self.objects.append(object.SandBarricade(300, 400, 90))
-        # self.objects.append(object.SandBarricade(400, 300, 0))
 
     elif n == 0:
         pass

@@ -17,6 +17,8 @@ class Bullet:
 
     def __init__(self, x, y, rad, damage):
         self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
+        self.x += 5 * math.cos(rad)
+        self.y += 5 * math.sin(rad)
         self.dx, self.dy = self.x, self.y
         self.rad = rad
         self.damage = damage
@@ -117,8 +119,13 @@ next_state = {
     RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
 }
 
+next_state_handgun = {
+    IDLE: {LMD: SHOOT, LMU: IDLE, RD: RELOAD, TIMER: IGNORE},
+    SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: IDLE},
+    RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
+}
 
-class Gun:  # like ak47
+class Gun:
     def __init__(self, activate):
         # 탄약
         self.magazine_capacity = 30
@@ -181,12 +188,105 @@ class Gun:  # like ak47
             self.add_event(key_event)
 
 
-class Rifle_2:  # like m16
-    pass
+class Rifle_1(Gun):  # like a
+    def __init__(self, activate):
+        # 탄약
+        # super().__init__(activate)
+        self.magazine_capacity = 30
+        self.magazine_max_capacity = 30
+        self.ammo_max = 180
+
+        # 반동
+        self.recoil, self.max_recoil = 0, 0.3  # rad
+        self.add_recoil, self.mul_recoil = 0.1, 1.2
+
+        # 상태
+        self.activate = activate
+        self.timer = 0
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 45
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self, None)
 
 
-class Handgun:
-    pass
+class Rifle_2(Gun):  # like m
+    def __init__(self, activate):
+        # 탄약
+        self.magazine_capacity = 30
+        self.magazine_max_capacity = 30
+        self.ammo_max = 180
+
+        # 반동
+        self.recoil, self.max_recoil = 0, 0.27  # rad
+        self.add_recoil, self.mul_recoil = 0.09, 1.15
+
+        # 상태
+        self.activate = activate
+        self.timer = 0
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 40
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self, None)
+
+
+class Handgun(Gun):
+    def __init__(self, activate):
+        # 탄약
+        self.magazine_capacity = 8
+        self.magazine_max_capacity = 8
+        self.ammo_max = 40
+
+        # 반동
+        self.recoil, self.max_recoil = 0, 0.1  # rad
+        self.add_recoil, self.mul_recoil = 0.09, 1.05
+
+        # 상태
+        self.activate = activate
+        self.timer, self.rof = 0, 10
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 25
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self, None)
+
+        def update(self):
+            self.recoil = (self.recoil - 0.7 * game_framework.frame_time)
+            if self.shake == 2:
+                if self.recoil < self.mul_recoil / 3:
+                    self.recoil = self.mul_recoil / 3
+            if self.shake == 1:
+                if self.recoil < self.mul_recoil / 6:
+                    self.recoil = self.mul_recoil / 6
+            elif self.shake == 0:
+                if self.recoil < 0:
+                    self.recoil = 0
+
+            self.cur_state.do(self)
+
+            if self.event_que:
+                event = self.event_que.pop()
+                if next_state_handgun[self.cur_state][event] != IGNORE:
+                    self.cur_state.exit(self, event)
+                    try:
+                        self.cur_state = next_state_handgun[self.cur_state][event]
+                    except KeyError:
+                        print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
+                    # self.cur_state = next_state[self.cur_state][event]
+                    self.cur_state.enter(self, event)
 
 
 class Grenade:
