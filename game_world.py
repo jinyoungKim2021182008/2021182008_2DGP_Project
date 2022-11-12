@@ -1,14 +1,17 @@
 import game_constant
-
+import play_state
 
 FLOOR_LAYER = 0
 OBJECT_LAYER = 1
-CHARACTER_LAYER = 2
-BULLET_EFFECT_LAYER = 3
-BULLET_LAYER = 4
+CHARACTER_EFFECT_LAYER = 2
+ITEM_LAYER = 3
+CHARACTER_LAYER = 4
+BULLET_EFFECT_LAYER = 5
+BULLET_LAYER = 6
+UI_LAYER = 7
 
 
-objects = [[], [], [], [], []]
+objects = [[], [], [], [], [], [], [], []]
 
 def add_object(object, depth):
     objects[depth].append(object)
@@ -41,19 +44,49 @@ def clear():
 
 
 def object_collider():
+    # 총알이 한번에 여러 물체에 충돌하는 경우 가장 가까운 경우만 처리
     for bullet in objects[BULLET_LAYER]:
+        ps = []
         for character in objects[CHARACTER_LAYER]:
-            if game_constant.collide(bullet, character):
-                pass
+            p = game_constant.collide(bullet, character, 'BC')
+            if p is not None:
+                ps.append(p)
 
         for object in objects[OBJECT_LAYER]:
-            if game_constant.collide(bullet, object):
-                pass
+            p = game_constant.collide(bullet, object, 'BO')
+            if p is not None:
+                ps.append(p)
+
+        min_len, min_obj, min_p = None, None, None
+        if ps:
+            for p, object2 in ps:
+                len = game_constant.getLength(bullet.getPos(), p)
+                if min_len is None or len < min_len:
+                    min_len = len
+                    min_obj = object2
+                    min_p = p
+
+            if min_obj is not None:
+                bullet.collide_handle(min_obj, min_p)
+                min_obj.collide_handle(bullet)
 
     for character in objects[CHARACTER_LAYER]:
         for object in objects[OBJECT_LAYER]:
-            if game_constant.collide(character, object):
-                pass
+            game_constant.collide(character, object, 'CO')
+
+    for item in objects[ITEM_LAYER]:
+        if game_constant.collide(play_state.player, item, 'PI'):
+            item.collide_handle(play_state.player)
+            play_state.player.collide_handle(item)
+
+
+def returnEnemyCnt():
+    cnt = 0
+    for character in objects[CHARACTER_LAYER]:
+        if type(character).__name__ == 'Enemy':
+            cnt += 1
+
+    return cnt
 
 
 """

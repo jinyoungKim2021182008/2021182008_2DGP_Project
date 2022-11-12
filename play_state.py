@@ -2,9 +2,10 @@ from pico2d import *
 import game_framework
 import game_world
 import stage
-
+import ui
 
 player = None
+cursor = None
 
 
 def handle_events():
@@ -14,12 +15,15 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
+        elif event.type == SDL_MOUSEMOTION:
+            cursor.handle_event(event)
         else:
             player.handle_event(event)
 
 
 def enter():
-    global player
+    global cursor
+    cursor = ui.Cursor()
     stage.setStage(-1)
 
 

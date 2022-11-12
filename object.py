@@ -1,6 +1,8 @@
+import math
+
 from pico2d import *
 
-import game_constant
+from game_constant import Point, Rect
 
 
 class SandBarricade:
@@ -12,6 +14,8 @@ class SandBarricade:
         self.x = x
         self.width = 100
         self.height = 15
+        self.ps = []
+        self.setPs()
 
     def update(self):
         pass
@@ -24,18 +28,29 @@ class SandBarricade:
     def draw(self):
         self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
                                        self.rad, '0', self.x, self.y, self.width, self.height)
-        d = (self.width / 2) - 10
-        rx, ry = math.cos(self.rad), math.sin(self.rad)
-        x1, y1 = self.x + d * rx, self.y + d * ry
-        x2, y2 = self.x - d * rx, self.y - d * ry
-        self.img.draw(x1, y1)
-        self.img.draw(x2, y2)
+        self.drawPs()
 
-    def getRect(self):
-        return game_constant.Rect(game_constant.Point(self.x, self.y), self.width, self.height, self.rad)
+    def getPs(self):
+        return self.ps
 
     def collide_handle(self, other):
         pass
+
+    def setPs(self):
+        dis = math.sqrt((self.width / 2) ** 2 + (self.height / 2) ** 2)
+        dtheta = math.atan(self.height / self.width)
+        self.ps.append(Point(self.x + dis * math.cos(self.rad + dtheta),
+                             self.y + dis * math.sin(self.rad + dtheta)))
+        self.ps.append(Point(self.x + dis * math.cos(self.rad - dtheta),
+                             self.y + dis * math.sin(self.rad - dtheta)))
+        self.ps.append(Point(self.x + dis * math.cos(self.rad + dtheta + math.pi),
+                             self.y + dis * math.sin(self.rad + dtheta + math.pi)))
+        self.ps.append(Point(self.x + dis * math.cos(self.rad - dtheta + math.pi),
+                             self.y + dis * math.sin(self.rad - dtheta + math.pi)))
+
+    def drawPs(self):
+        for i in range(4):
+            self.img.draw(self.ps[i].x, self.ps[i].y)
 
 class SteelBarricade:
     def __init__(self):

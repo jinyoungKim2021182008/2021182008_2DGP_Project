@@ -3,9 +3,11 @@ from pico2d import *
 import character
 import game_world
 
+import ui
 import object
 import play_state
 from character import Player, Enemy
+from item import Target
 
 from game_constant import *
 
@@ -21,6 +23,7 @@ def setStage(n):
                         load_image('image/stage/stage_desert.png')]
         stage_num = 0
 
+    game_world.add_object(ui.InfoBox(), game_world.UI_LAYER)
     if n == -1:
         stage_num = 0
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
@@ -32,11 +35,13 @@ def setStage(n):
         # enemy
         game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
         # object
-        game_world.add_object(object.SandBarricade(100, 100, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(150, 600, 13), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
-
+        # item
+        game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
     elif n == 0:
         pass
     elif n == 1:

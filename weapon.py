@@ -27,7 +27,7 @@ class Bullet:
         self.rad = rad
         self.damage = damage
         if Bullet.image is None:
-            Bullet.image = load_image('image/character/bullet.png')
+            Bullet.image = load_image('image/bullet.png')
             Bullet.image_w, Bullet.image_h = Bullet.image.w, Bullet.image.h
 
     def update(self):
@@ -43,13 +43,17 @@ class Bullet:
         self.image.clip_composite_draw(0, 0, self.image_w, self.image_h, self.rad, '0',
                                        self.x, self.y, self.damage * 2, self.image_h)
 
+    def getPos(self):
+        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
+        return game_constant.Point(self.dx - dc, self.dy - ds)
+
     def getLine(self):
         ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
         return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
 
-    def collide_handle(self, other):
+    def collide_handle(self, other, point):
         game_world.remove_object(self)
-        game_world.add_object(efecte.BulletEffect(100, 100), game_world.BULLET_EFFECT_LAYER)
+        game_world.add_object(efecte.BulletEffect(point.x, point.y), game_world.BULLET_EFFECT_LAYER)
 
 
 LMD, LMU, RD, TIMER, IGNORE = range(5)
@@ -85,7 +89,7 @@ class SHOOT:
 
         rad_d = random.uniform(-self.recoil, self.recoil)
         bullet = Bullet(self.x, self.y, self.rad + rad_d, self.damage)
-        game_world.add_object(bullet, 2)
+        game_world.add_object(bullet, game_world.BULLET_LAYER)
 
         self.recoil = (self.recoil + self.add_recoil) * self.mul_recoil
         if self.recoil > self.max_recoil:
@@ -260,7 +264,7 @@ class Handgun(Gun):
 
         # 반동
         self.recoil, self.max_recoil = 0, 0.1  # rad
-        self.add_recoil, self.mul_recoil = 0.09, 1.05
+        self.add_recoil, self.mul_recoil = 0.1, 1.1
 
         # 상태
         self.activate = activate
@@ -275,30 +279,30 @@ class Handgun(Gun):
         self.cur_state = IDLE
         self.cur_state.enter(self, None)
 
-        def update(self):
-            self.recoil = (self.recoil - 0.7 * game_framework.frame_time)
-            if self.shake == 2:
-                if self.recoil < self.mul_recoil / 3:
-                    self.recoil = self.mul_recoil / 3
-            if self.shake == 1:
-                if self.recoil < self.mul_recoil / 6:
-                    self.recoil = self.mul_recoil / 6
-            elif self.shake == 0:
-                if self.recoil < 0:
-                    self.recoil = 0
+    def update(self):
+        self.recoil = (self.recoil - 0.7 * game_framework.frame_time)
+        if self.shake == 2:
+            if self.recoil < self.mul_recoil / 3:
+                self.recoil = self.mul_recoil / 3
+        if self.shake == 1:
+            if self.recoil < self.mul_recoil / 6:
+                self.recoil = self.mul_recoil / 6
+        elif self.shake == 0:
+            if self.recoil < 0:
+                self.recoil = 0
 
-            self.cur_state.do(self)
+        self.cur_state.do(self)
 
-            if self.event_que:
-                event = self.event_que.pop()
-                if next_state_handgun[self.cur_state][event] != IGNORE:
-                    self.cur_state.exit(self, event)
-                    try:
-                        self.cur_state = next_state_handgun[self.cur_state][event]
-                    except KeyError:
-                        print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
-                    # self.cur_state = next_state[self.cur_state][event]
-                    self.cur_state.enter(self, event)
+        if self.event_que:
+            event = self.event_que.pop()
+            if next_state_handgun[self.cur_state][event] != IGNORE:
+                self.cur_state.exit(self, event)
+                try:
+                    self.cur_state = next_state_handgun[self.cur_state][event]
+                except KeyError:
+                    print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
+                # self.cur_state = next_state[self.cur_state][event]
+                self.cur_state.enter(self, event)
 
 
 class Grenade:

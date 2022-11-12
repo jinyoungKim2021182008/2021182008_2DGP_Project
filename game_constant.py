@@ -21,30 +21,39 @@ class Rect:
         self.rad = rad
 
 
-def collide(object1, object2):
-    object1_name, object2_name = type(object1).__name__, type(object2).__name__
+class Circle:
+    def __init__(self, p, r):
+        self.p = p
+        self.r = r
 
-    if object1_name == 'Bullet' and object2_name == 'Character':
+
+def collide(object1, object2, pair):
+    if pair == 'CO':
+
         pass
 
-    if object1_name == 'Bullet' and object2_name == 'SandBarricade':
-        if Line2Rect(object1.getLine(), object2.getRect()):
-            object1.collide_handle(object2)
-            object2.collide_handle(object1)
+    if pair == 'PI':
+        # print(object1.get_bb())
+        if AABB(object1.get_bb(), object2.get_bb()):
+            return True
+        return False
+
+    if pair == 'BC':
+        p = LineGr2Circle_RP(object1.getLine(), object1.rad, object2.getCircle())
+        if p is not None:
+            return [p, object2]
+            # object1.collide_handle(object2, p)
+            # object2.collide_handle(object1)
+
+    if pair == 'BO':
+        p = Line2Rect_RP(object1.getLine(), object2.getPs())
+        if p is not None:
+            return [p, object2]
+            # object1.collide_handle(object2, p)
+            # object2.collide_handle(object1)
 
 
 """
-def bullet_crash(bullet, other):
-    if type(other).__name__ == 'SandBarricade':
-        bx1, by1 = bullet.x - 25 * math.cos(bullet.rad), bullet.y - 25 * math.sin(bullet.y)
-        bx2, by2 = bullet.x + 25 * math.cos(bullet.rad), bullet.y + 25 * math.sin(bullet.y)
-
-        if crashLine2Rect(bx1, by1, bx2, by2, other.x, other.y, other.rad, 100, 15):
-            return True
-
-    return False
-
-
 def crashCharacter2Object(character, object):
     d = (object.width / 2) - 20
     dis = object.height + 10
@@ -85,45 +94,75 @@ def crashCharacter2Object(character, object):
 
     elif return_crash == 2 or return_crash == 3:
         pass
-
-
-def crashCircle2Line(cx, cy, r, x1, y1, x2, y2, rad):
-    d_rad = rad + math.pi / 2
-    rx, ry = math.cos(d_rad), math.sin(d_rad)
-    cx1, cy1 = cx + r * rx, cy + r * ry
-    cx2, cy2 = cx - r * rx, cy - r * ry
-    if crashLine2Line(Point(cx1, cy1), Point(cx2, cy2), Point(x1, y1), Point(x2, y2)):
-        return 1
-    val = pow(x1 - cx, 2) + pow(y1 - cy, 2)
-    if val <= r * r:
-        return 2
-    val = pow(x2 - cx, 2) + pow(y2 - cy, 2)
-    if val <= r * r:
-        return 3
-
-    return -1
-
 """
-def Line2Rect_ReturnPoint(line, rect):
-    rs, rc = math.sin(rect.rad), math.cos(rect.rad)
-    rp1 = Point(rect.p.x - (rect.width / 2) * rc, rect.p.y - (rect.height / 2) * rs)
-    rp2 = Point(rect.p.x + (rect.width / 2) * rc, rect.p.y - (rect.height / 2) * rs)
-    rp3 = Point(rect.p.x + (rect.width / 2) * rc, rect.p.y + (rect.height / 2) * rs)
-    rp4 = Point(rect.p.x - (rect.width / 2) * rc, rect.p.y + (rect.height / 2) * rs)
 
+def AABB(rect1, rect2):
+    # lbrt
+    if rect1[2] < rect2[0]:
+        return False
+    if rect1[3] < rect2[1]:
+        return False
+    if rect2[2] < rect1[0]:
+        return False
+    if rect2[3] < rect1[1]:
+        return False
+    return True
+
+
+def Rect2Rect(rps1, rps2):
+
+    pass
+
+
+def Line2Circle_RP(line, circle):
+    d_rad = math.atan2(line.p2.y - line.p1.y, line.p2.x - line.p1.x) + math.pi / 2
+    ds, dc = math.sin(d_rad), math.cos(d_rad)
+    n_line = Line(Point(circle.p.x + circle.r * dc, circle.p.y + circle.r * ds),
+                  Point(circle.p.x - circle.r * dc, circle.p.y - circle.r * ds))
+    p = Line2Line_RP(n_line, line)
+    return p
+
+
+def Line2Circle(line, circle):
+    d_rad = math.atan2(line.p2.y - line.p1.y, line.p2.x - line.p1.x) + math.pi / 2
+    ds, dc = math.sin(d_rad), math.cos(d_rad)
+    n_line = Line(Point(circle.p.x + circle.r * dc, circle.p.y + circle.r * ds),
+                  Point(circle.p.x - circle.r * dc, circle.p.y - circle.r * ds))
+    if Line2Line(n_line, line):
+        return True
+    return False
+
+
+def LineGr2Circle_RP(line, rad, circle):
+    d_rad = rad + math.pi / 2
+    ds, dc = math.sin(d_rad), math.cos(d_rad)
+    n_line = Line(Point(circle.p.x + circle.r * dc, circle.p.y + circle.r * ds),
+                  Point(circle.p.x - circle.r * dc, circle.p.y - circle.r * ds))
+    p = Line2Line_RP(n_line, line)
+    return p
+
+
+def LineGr2Circle(line, rad, circle):
+    d_rad = rad + math.pi / 2
+    ds, dc = math.sin(d_rad), math.cos(d_rad)
+    n_line = Line(Point(circle.p.x + circle.r * dc, circle.p.y + circle.r * ds),
+                  Point(circle.p.x - circle.r * dc, circle.p.y - circle.r * ds))
+    if Line2Line(n_line, line):
+        return True
+    return False
+
+
+def Line2Rect_RP(line, rps):
     min_p = None
     min_len = None
 
-    ps = []
-    ps += Line2Line_ReturnPoint(line, Line(rp1, rp2))
-    ps += Line2Line_ReturnPoint(line, Line(rp2, rp3))
-    ps += Line2Line_ReturnPoint(line, Line(rp3, rp4))
-    ps += Line2Line_ReturnPoint(line, Line(rp4, rp1))
+    ps = [Line2Line_RP(line, Line(rps[0], rps[1])), Line2Line_RP(line, Line(rps[1], rps[2])),
+          Line2Line_RP(line, Line(rps[2], rps[3])), Line2Line_RP(line, Line(rps[3], rps[0]))]
 
     for p in ps:
         if p is not None:
             len = getLengthPow(line.p1, p)
-            if len < min_len or min_len is None:
+            if min_len is None or len < min_len:
                 min_p, min_len = p, len
     return min_p
 
@@ -147,7 +186,7 @@ def Line2Rect(line, rect):
     return False
 
 
-def Line2Line_ReturnPoint(l1, l2):
+def Line2Line_RP(l1, l2):
     if Line2Line(l1, l2):
         x1 = l1.p1.x - l1.p2.x
         x2 = l2.p1.x - l2.p2.x
@@ -194,12 +233,12 @@ def getLength(p1, p2):
 def getLengthPow(p1, p2):
     return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
 
-"""
-def returnGT(a, b, bool):
-    if bool:
-        if a >= b: return a
-        else: return b
-    else:
-        if a >= b: return b
-        else: return a
-"""
+
+# def returnGT(a, b, b):
+#     if b:
+#         if a >= b: return a
+#         else: return b
+#     else:
+#         if a >= b: return b
+#         else: return a
+
