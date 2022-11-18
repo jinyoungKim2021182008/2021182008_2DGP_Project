@@ -501,6 +501,15 @@ class Player(Character):
 
         self.setBodyRad()
 
+        if self.x < 15:
+            self.x = 15
+        if self.x > 785:
+            self.x = 785
+        if self.y < 95:
+            self.y = 95
+        if self.y > 785:
+            self.y = 785
+
         self.weapons[self.select_weapon].setPos(self.x, self.y, self.body_rad)
         self.weapons[self.select_weapon].update()
 

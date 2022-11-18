@@ -21,6 +21,14 @@ class Rect:
         self.rad = rad
 
 
+class RectP:
+    def __init__(self, top, bottom, left, right):
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+
 class Circle:
     def __init__(self, p, r):
         self.p = p
@@ -51,6 +59,13 @@ def collide(object1, object2, pair):
             return [p, object2]
             # object1.collide_handle(object2, p)
             # object2.collide_handle(object1)
+
+
+def Point2Rect(p, rect):
+    if p.x > rect.left and p.x < rect.right:
+        if p.y > rect.bottom and p.y < rect.top:
+            return True
+    return False
 
 
 """

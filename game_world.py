@@ -8,10 +8,11 @@ ITEM_LAYER = 3
 CHARACTER_LAYER = 4
 BULLET_EFFECT_LAYER = 5
 BULLET_LAYER = 6
-UI_LAYER = 7
+UI_BUTTON = 7
+UI_LAYER = 8
 
 
-objects = [[], [], [], [], [], [], [], []]
+objects = [[], [], [], [], [], [], [], [], []]
 
 def add_object(object, depth):
     objects[depth].append(object)
