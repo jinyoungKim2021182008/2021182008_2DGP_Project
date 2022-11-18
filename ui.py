@@ -1,4 +1,6 @@
 from pico2d import *
+
+import game_constant
 import game_world
 import play_state
 
@@ -16,6 +18,9 @@ class Cursor:
     def get_pos(self):
         return self.x, self.y
 
+    def getPoint(self):
+        return game_constant.Point(self.x, self.y)
+
     def update(self):
         pass
 
@@ -26,6 +31,24 @@ class Cursor:
         if event.type == SDL_MOUSEMOTION:
             self.set_pos(event.x, 800 - 1 - event.y)
 
+
+class Button:
+    def __init__(self, image1, image2, x, y, w, h, name):
+        self.image = [image1, image2]
+        self.state = 0
+        self.x, self.y = x, y
+        self.w, self.h = w, h
+        self.name = name
+        game_world.add_object(self, game_world.UI_LAYER)
+
+    def draw(self):
+        self.image[self.state].draw(self.x, self.y, self.w, self.h)
+
+    def update(self):
+        pass
+
+    def getRect(self):
+        return game_constant.RectP(self.y + self.w // 2, self.y - self.w // 2, self.x - self.w // 2, self.x + self.w // 2)
 
 class InfoBox:
     def __init__(self):

@@ -34,6 +34,9 @@ def setStage(n):
         game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
         # enemy
         game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
@@ -42,12 +45,48 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
-    elif n == 0:
-        pass
     elif n == 1:
-        pass
+        stage_num = 1
+        STAGE_WIDTH, STAGE_HEIGHT = 800, 800
+        # stage_image
+        game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
+        # player
+        play_state.player = Player(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
+        game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
+        # enemy
+        game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
+        # object
+        game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(150, 600, 13), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
+        # item
+        game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
     elif n == 2:
-        pass
+        stage_num = 2
+        STAGE_WIDTH, STAGE_HEIGHT = 800, 800
+        # stage_image
+        game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
+        # player
+        play_state.player = Player(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
+        game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
+        # enemy
+        game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
+        # object
+        game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(150, 600, 13), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
+        # item
+        game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
 
 def drawStage():
     stage_images[stage_num].draw(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, STAGE_WIDTH, STAGE_HEIGHT)

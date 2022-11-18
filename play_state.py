@@ -3,6 +3,8 @@ import game_framework
 import game_world
 import stage
 import ui
+import menu_state
+
 
 player = None
 cursor = None
@@ -24,7 +26,7 @@ def handle_events():
 def enter():
     global cursor
     cursor = ui.Cursor()
-    stage.setStage(-1)
+    stage.setStage(menu_state.stage_num)
 
 
 def exit():
