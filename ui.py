@@ -10,7 +10,6 @@ class Cursor:
         self.image = load_image('image/ui/cursor.png')
         self.x, self.y = 0, 0
         hide_cursor()
-        game_world.add_object(self, game_world.UI_LAYER)
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
@@ -39,7 +38,6 @@ class Button:
         self.x, self.y = x, y
         self.w, self.h = w, h
         self.name = name
-        game_world.add_object(self, game_world.UI_LAYER)
 
     def draw(self):
         self.image[self.state].draw(self.x, self.y, self.w, self.h)

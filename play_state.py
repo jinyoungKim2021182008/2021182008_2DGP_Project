@@ -27,13 +27,17 @@ def handle_events():
 def enter():
     global cursor, player
     cursor = ui.Cursor()
+    game_world.add_object(cursor, game_world.UI_LAYER)
     player = character.Player(400, 400, 100, 100, menu_state.main_weapon_num, menu_state.sub_weapon_num, menu_state.grenade_num)
     game_world.add_object(player, game_world.CHARACTER_LAYER)
     stage.setStage(menu_state.stage_num)
 
 
 def exit():
+    global player, cursor
     game_world.clear()
+    player = None
+    cursor = None
 
 
 def update():

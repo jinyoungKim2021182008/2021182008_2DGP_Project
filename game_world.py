@@ -80,8 +80,8 @@ def object_collider():
     # 아이템과 캐릭터 처리
     for item in objects[ITEM_LAYER]:
         if game_constant.collide(play_state.player, item, 'PI'):
-            item.collide_handle(play_state.player)
             play_state.player.collide_handle(item)
+            item.collide_handle(play_state.player)
 
 
 def returnEnemyCnt():

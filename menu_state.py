@@ -70,28 +70,47 @@ def handle_events():
 
 def enter():
     global menu_image, cursor, stage_buttons, play_button
-    menu_image = load_image('image/ui/menu.png')
-    stage_buttons.append(ui.Button(load_image('image/ui/button/t.png'), load_image('image/ui/button/t_select.png'), 150, 520, 100, 100, 't'))
-    stage_buttons.append(ui.Button(load_image('image/ui/button/1.png'), load_image('image/ui/button/1_select.png'), 400, 600, 100, 100, '1'))
-    stage_buttons.append(ui.Button(load_image('image/ui/button/2.png'), load_image('image/ui/button/2_select.png'), 650, 550, 100, 100, '2'))
-    stage_buttons[1].state = 1
-    play_button = ui.Button(load_image('image/ui/button/play.png'), load_image('image/ui/button/play.png'), 650, 100, 150, 75, 'play')
+    if menu_image is None:
+        menu_image = load_image('image/ui/menu.png')
+    if len(stage_buttons) == 0:
+        stage_buttons.append(ui.Button(load_image('image/ui/button/t.png'), load_image('image/ui/button/t_select.png'), 150, 520, 100, 100, 't'))
+        stage_buttons.append(ui.Button(load_image('image/ui/button/1.png'), load_image('image/ui/button/1_select.png'), 400, 600, 100, 100, '1'))
+        stage_buttons.append(ui.Button(load_image('image/ui/button/2.png'), load_image('image/ui/button/2_select.png'), 650, 550, 100, 100, '2'))
+        stage_buttons[1].state = 1
 
-    main_weapons.append(load_image('image/weapon/rifle_1.png'))
-    main_weapons.append(load_image('image/weapon/rifle_2.png'))
-    sub_weapons.append(load_image('image/weapon/handgun.png'))
-    grenades.append(load_image('image/weapon/grenade_1.png'))
-    grenades.append(load_image('image/weapon/grenade_2.png'))
+    for button in stage_buttons:
+        game_world.add_object(button, game_world.UI_LAYER)
 
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 220, 210, 30, 30, 'main_l'))
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 345, 210, 30, 30, 'main_r'))
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 80, 80, 30, 30, 'sub_l'))
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 180, 80, 30, 30, 'sub_r'))
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 250, 80, 30, 30, 'grenade_l'))
-    weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 350, 80, 30, 30, 'grenade_r'))
-    for b in weapon_buttons:
-        b.state = 1
-    cursor = ui.Cursor()
+    if play_button is None:
+        play_button = ui.Button(load_image('image/ui/button/play.png'), load_image('image/ui/button/play.png'), 650, 100, 150, 75, 'play')
+    game_world.add_object(play_button, game_world.UI_LAYER)
+
+    if len(main_weapons) == 0:
+        main_weapons.append(load_image('image/weapon/rifle_1.png'))
+        main_weapons.append(load_image('image/weapon/rifle_2.png'))
+    if len(sub_weapons) == 0:
+        sub_weapons.append(load_image('image/weapon/handgun.png'))
+    if len(grenades) == 0:
+        grenades.append(load_image('image/weapon/grenade_1.png'))
+        grenades.append(load_image('image/weapon/grenade_2.png'))
+
+    if len(weapon_buttons) == 0:
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 220, 210, 30, 30, 'main_l'))
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 345, 210, 30, 30, 'main_r'))
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 80, 80, 30, 30, 'sub_l'))
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 180, 80, 30, 30, 'sub_r'))
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 250, 80, 30, 30, 'grenade_l'))
+        weapon_buttons.append(ui.Button(load_image('image/ui/button/r_button_off.png'), load_image('image/ui/button/r_button_on.png'), 350, 80, 30, 30, 'grenade_r'))
+        for b in weapon_buttons:
+            b.state = 1
+
+    for button in weapon_buttons:
+        game_world.add_object(button, game_world.UI_LAYER)
+
+    if cursor is None:
+        cursor = ui.Cursor()
+    game_world.add_object(cursor, game_world.UI_LAYER)
+
 
 def exit():
     game_world.clear()
