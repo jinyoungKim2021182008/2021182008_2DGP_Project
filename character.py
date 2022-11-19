@@ -97,7 +97,7 @@ class WALK:
     def do(self):
         if self.feet_dir_x == 0 and self.feet_dir_y == 0:
             self.change_state(self.move_state, IDLE)
-        elif self.feet_dir_x == 1 and self.feet_dir_y == 1:
+        elif self.feet_dir_x != 0 and self.feet_dir_y != 0:
             self.x += self.feet_dir_x * WALK_SPEED_PPS * game_framework.frame_time / 1.4
             self.y += self.feet_dir_y * WALK_SPEED_PPS * game_framework.frame_time / 1.4
         else:
@@ -147,7 +147,7 @@ class RUN:
     def do(self):
         if self.feet_dir_x == 0 and self.feet_dir_y == 0:
             self.change_state(self.move_state, IDLE)
-        elif self.feet_dir_x == 1 and self.feet_dir_y == 1:
+        elif self.feet_dir_x != 0 and self.feet_dir_y != 0:
             self.x += self.feet_dir_x * RUN_SPEED_PPS * game_framework.frame_time / 1.4
             self.y += self.feet_dir_y * RUN_SPEED_PPS * game_framework.frame_time / 1.4
         else:
@@ -360,7 +360,7 @@ class Character:
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
 
-    def get_Ps(self):
+    def getPs(self):
         return [Point(self.x + 10, self.y + 10), Point(self.x + 10, self.y - 10),
                 Point(self.x - 10, self.y - 10), Point(self.x - 10, self.y + 10)]
 
@@ -398,6 +398,20 @@ class Character:
         if type(other).__name__ == 'Target':
             pass
 
+        if type(other).__name__ == 'SandBarricade':
+            speed = 0.0
+            # if self.fs == 1:
+            #     speed = WALK_SPEED_PPS
+            # if self.fs == 2:
+            #     speed = RUN_SPEED_PPS
+            # if self.feet_dir_x != 0 and self.feet_dir_x != 0:
+            #     self.x -= self.feet_dir_x * speed * game_framework.frame_time / 1.4
+            #     self.y -= self.feet_dir_y * speed * game_framework.frame_time / 1.4
+            # elif self.feet_dir_x != 0:
+            #     self.x -= self.feet_dir_x * speed * game_framework.frame_time
+            # elif self.feet_dir_y != 0:
+            #     self.y -= self.feet_dir_y * speed * game_framework.frame_time
+            print(1)
 
 class Player(Character):
     feet_image = None
@@ -407,7 +421,7 @@ class Player(Character):
     body_image_w = []
     body_image_h = []
 
-    def __init__(self, x, y, hp, armor):
+    def __init__(self, x, y, hp, armor, main_weapon_num, sub_weapon_num, grenade_num):
         """
         캐릭터 위치 및 정보
         """
@@ -446,19 +460,27 @@ class Player(Character):
                                  [load_image('image/character/player/body/handgun/idle.png'),  # cnt = 20
                                   load_image('image/character/player/body/handgun/move.png'),  # cnt = 20
                                   load_image('image/character/player/body/handgun/reload.png'),  # cnt = 15
-                                  load_image('image/character/player/body/handgun/shoot.png')]]  # cnt = 3
+                                  load_image('image/character/player/body/handgun/shoot.png')], # cnt = 3
+                                 [load_image('image/character/player/body/grenade/idle.png'),   # cnt = 20
+                                  load_image('image/character/player/body/grenade/move.png'),   # cnt = 20
+                                  None,
+                                  load_image('image/character/player/body/grenade/shoot.png')]]  # cnt = 15
             Player.body_image_w = [[self.body_image[0][0].w // 20, self.body_image[0][1].w // 20,
                                    self.body_image[0][2].w // 20, self.body_image[0][3].w // 3],
                                    [self.body_image[1][0].w // 20, self.body_image[1][1].w // 20,
                                    self.body_image[1][2].w // 20, self.body_image[1][3].w // 3],
                                    [self.body_image[2][0].w // 20, self.body_image[2][1].w // 20,
-                                   self.body_image[2][2].w // 15, self.body_image[2][3].w // 3]]
+                                   self.body_image[2][2].w // 15, self.body_image[2][3].w // 3],
+                                   [self.body_image[3][0].w // 20, self.body_image[3][1].w // 20,
+                                    None, self.body_image[3][3].w // 15]]
             Player.body_image_h = [[self.body_image[0][0].h, self.body_image[0][1].h,
                                    self.body_image[0][2].h, self.body_image[0][3].h],
                                    [self.body_image[1][0].h, self.body_image[1][1].h,
                                    self.body_image[1][2].h, self.body_image[1][3].h],
                                    [self.body_image[2][0].h, self.body_image[2][1].h,
-                                   self.body_image[2][2].h, self.body_image[2][3].h]]
+                                   self.body_image[2][2].h, self.body_image[2][3].h],
+                                   [self.body_image[3][0].h, self.body_image[3][1].h,
+                                    None, self.body_image[3][3].h]]
 
         self.body_frame = 0
         self.body_reload_frame = 0
@@ -467,7 +489,17 @@ class Player(Character):
         """
         무기
         """
-        self.weapons = [weapon.Rifle_1(True), weapon.Rifle_2(True), weapon.Handgun(True)]
+        self.weapons = []
+        if main_weapon_num == 0:
+            self.weapons.append(weapon.Rifle_1(True))
+        if main_weapon_num == 1:
+            self.weapons.append(weapon.Rifle_2(True))
+        if sub_weapon_num == 0:
+            self.weapons.append(weapon.Handgun(True))
+        if grenade_num == 0:
+            pass
+        if grenade_num == 1:
+            pass
         self.select_weapon = 0
 
         self.event_que = []

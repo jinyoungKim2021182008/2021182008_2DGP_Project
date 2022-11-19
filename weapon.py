@@ -26,18 +26,22 @@ class Bullet:
         self.dx, self.dy = self.x, self.y
         self.rad = rad
         self.damage = damage
+        self.fir = True
         if Bullet.image is None:
             Bullet.image = load_image('image/bullet.png')
             Bullet.image_w, Bullet.image_h = Bullet.image.w, Bullet.image.h
 
     def update(self):
-        self.dx, self.dy = self.x, self.y
-        self.x += BULLET_SPEED_PPS * game_framework.frame_time * math.cos(self.rad)
-        self.y += BULLET_SPEED_PPS * game_framework.frame_time * math.sin(self.rad)
-        if self.x < 0 - 25 or self.x > stage.STAGE_WIDTH + 25:
-            game_world.remove_object(self)
-        elif self.y < 0 - 25 or self.y > stage.STAGE_HEIGHT + 25:
-            game_world.remove_object(self)
+        if self.fir:
+            self.fir = False
+        else:
+            self.dx, self.dy = self.x, self.y
+            self.x += BULLET_SPEED_PPS * game_framework.frame_time * math.cos(self.rad)
+            self.y += BULLET_SPEED_PPS * game_framework.frame_time * math.sin(self.rad)
+            if self.x < 0 - 25 or self.x > stage.STAGE_WIDTH + 25:
+                game_world.remove_object(self)
+            elif self.y < 0 - 25 or self.y > stage.STAGE_HEIGHT + 25:
+                game_world.remove_object(self)
 
     def draw(self):
         self.image.clip_composite_draw(0, 0, self.image_w, self.image_h, self.rad, '0',
@@ -306,6 +310,7 @@ class Handgun(Gun):
 
 
 class Grenade:
+    
     pass
 
 

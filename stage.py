@@ -24,14 +24,11 @@ def setStage(n):
         stage_num = 0
 
     game_world.add_object(ui.InfoBox(), game_world.UI_LAYER)
-    if n == -1:
+    if n == 0:
         stage_num = 0
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
-        # player
-        play_state.player = Player(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
-        game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
         # enemy
         game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
         game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
@@ -50,9 +47,6 @@ def setStage(n):
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
-        # player
-        play_state.player = Player(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
-        game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
         # enemy
         game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
         game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
@@ -71,9 +65,6 @@ def setStage(n):
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
-        # player
-        play_state.player = Player(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, 100, 100)
-        game_world.add_object(play_state.player, game_world.CHARACTER_LAYER)
         # enemy
         game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
         game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)

@@ -71,10 +71,13 @@ def object_collider():
                 bullet.collide_handle(min_obj, min_p)
                 min_obj.collide_handle(bullet)
 
+    # 캐릭터와 구조물 처리
     for character in objects[CHARACTER_LAYER]:
         for object in objects[OBJECT_LAYER]:
-            game_constant.collide(character, object, 'CO')
+            if game_constant.collide(character, object, 'CO'):
+                play_state.player.collide_handle(object)
 
+    # 아이템과 캐릭터 처리
     for item in objects[ITEM_LAYER]:
         if game_constant.collide(play_state.player, item, 'PI'):
             item.collide_handle(play_state.player)

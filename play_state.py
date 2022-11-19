@@ -4,6 +4,7 @@ import game_world
 import stage
 import ui
 import menu_state
+import character
 
 
 player = None
@@ -24,8 +25,10 @@ def handle_events():
 
 
 def enter():
-    global cursor
+    global cursor, player
     cursor = ui.Cursor()
+    player = character.Player(400, 400, 100, 100, menu_state.main_weapon_num, menu_state.sub_weapon_num, menu_state.grenade_num)
+    game_world.add_object(player, game_world.CHARACTER_LAYER)
     stage.setStage(menu_state.stage_num)
 
 

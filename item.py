@@ -1,6 +1,9 @@
 from pico2d import *
+
+import game_framework
 import game_world
 import game_constant
+import menu_state
 
 
 class Item:
@@ -37,5 +40,6 @@ class Target(Item):
     def collide_handle(self, other):
         if game_world.returnEnemyCnt() == 0:
             print('you win')
+            game_framework.change_state(menu_state)
         else:
             print(f'{game_world.returnEnemyCnt()} enemy left')

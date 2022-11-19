@@ -37,8 +37,9 @@ class Circle:
 
 def collide(object1, object2, pair):
     if pair == 'CO':
-
-        pass
+        if Rect2Rect(object1.getPs(), object2.getPs()):
+            return True
+        return False
 
     if pair == 'PI':
         # print(object1.get_bb())
@@ -125,8 +126,14 @@ def AABB(rect1, rect2):
 
 
 def Rect2Rect(rps1, rps2):
+    ls1 = [Line(rps1[0], rps1[1]), Line(rps1[1], rps1[2]), Line(rps1[2], rps1[3]), Line(rps1[3], rps1[0])]
+    ls2 = [Line(rps2[0], rps2[1]), Line(rps2[1], rps2[2]), Line(rps2[2], rps2[3]), Line(rps2[3], rps2[0])]
+    for l1 in ls1:
+        for l2 in ls2:
+            if Line2Line(l1, l2):
+                return True
 
-    pass
+    return False
 
 
 def Line2Circle_RP(line, circle):
