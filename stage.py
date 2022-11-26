@@ -22,8 +22,8 @@ def setStage(n):
                         load_image('image/stage/stage_jungle.png'),
                         load_image('image/stage/stage_desert.png')]
         stage_num = 0
-
     game_world.add_object(ui.InfoBox(), game_world.UI_LAYER)
+
     if n == 0:
         stage_num = 0
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
@@ -42,6 +42,7 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
+
     elif n == 1:
         stage_num = 1
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
@@ -60,6 +61,7 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
+
     elif n == 2:
         stage_num = 2
         STAGE_WIDTH, STAGE_HEIGHT = 800, 800
@@ -79,7 +81,7 @@ def setStage(n):
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
 
-def drawStage():
+def draw_stage():
     stage_images[stage_num].draw(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, STAGE_WIDTH, STAGE_HEIGHT)
 
 """

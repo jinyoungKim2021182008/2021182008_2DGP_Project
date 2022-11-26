@@ -5,7 +5,7 @@ import game_constant
 import game_world
 import game_framework
 import stage
-import efecte
+import effect
 
 
 PIXEL_PER_METER = 20.0
@@ -28,7 +28,7 @@ class Bullet:
         self.damage = damage
         self.fir = True
         if Bullet.image is None:
-            Bullet.image = load_image('image/bullet.png')
+            Bullet.image = load_image('image/weapon/bullet.png')
             Bullet.image_w, Bullet.image_h = Bullet.image.w, Bullet.image.h
 
     def update(self):
@@ -47,17 +47,77 @@ class Bullet:
         self.image.clip_composite_draw(0, 0, self.image_w, self.image_h, self.rad, '0',
                                        self.x, self.y, self.damage * 2, self.image_h)
 
-    def getPos(self):
+    def get_pos(self):
         ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
         return game_constant.Point(self.dx - dc, self.dy - ds)
 
-    def getLine(self):
+    def get_line(self):
         ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
         return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
 
-    def collide_handle(self, other, point):
+    def handle_collide(self, other, point):
         game_world.remove_object(self)
-        game_world.add_object(efecte.BulletEffect(point.x, point.y), game_world.BULLET_EFFECT_LAYER)
+        game_world.add_object(effect.BulletEffect(point.x, point.y), game_world.BULLET_EFFECT_LAYER)
+
+
+class Grenade:
+    image = None
+    image_w, image_h = None, None
+
+    def __init__(self, x, y, rad, damage, speed):
+        self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
+        self.x += (damage - 10) * math.cos(rad)
+        self.y += (damage - 10) * math.sin(rad)
+        self.dx, self.dy = self.x, self.y
+        self.speed = speed * 1000.0 / 360.0 * 20.0
+        self.rad = rad
+        self.timer = 8.0
+        self.damage = damage
+        self.fir = True
+        if Grenade.image is None:
+            Grenade.image = load_image('image/weapon/grenade_1.png')
+            Grenade.image_w, Grenade.image_h = Grenade.image.w, Grenade.image.h
+
+    def update(self):
+        if self.fir:
+            self.fir = False
+        else:
+            self.dx, self.dy = self.x, self.y
+            self.x += self.speed * game_framework.frame_time * math.cos(self.rad)
+            self.y += self.speed * game_framework.frame_time * math.sin(self.rad)
+            if self.x < 0 or self.x > stage.STAGE_WIDTH:
+                self.x = clamp(0, self.x, stage.STAGE_WIDTH)
+                self.rad += math.pi - self.rad * 2
+            if self.y < 0 or self.y > stage.STAGE_HEIGHT:
+                self.rad = -self.rad
+                self.y = clamp(0, self.y, stage.STAGE_HEIGHT)
+
+            self.timer -= game_framework.frame_time
+            if self.timer < 0:
+                pass
+
+            self.speed -= 10
+            if self.speed < 0:
+                self.speed = 0
+
+    def draw(self):
+        self.image.clip_composite_draw(0, 0, self.image_w, self.image_h, self.rad, '0',
+                                       self.x, self.y, 10, 10)
+
+    def explosion(self):
+        game_world.remove_object(self)
+        pass
+
+    def get_pos(self):
+        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
+        return game_constant.Point(self.dx - dc, self.dy - ds)
+
+    def get_line(self):
+        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
+        return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
+
+    def handle_collide(self, other, point):
+        pass
 
 
 LMD, LMU, RD, TIMER, IGNORE = range(5)
@@ -110,6 +170,33 @@ class SHOOT:
             self.add_event(TIMER)
 
 
+class THROW:
+    @staticmethod
+    def enter(self, event):
+        if self.magazine_capacity <= 0:
+            self.cur_state = IDLE
+            return
+        self.magazine_capacity -= 1
+        self.timer = 1.0
+
+    @staticmethod
+    def exit(self, event):
+        grenade = Grenade(self.x, self.y, self.rad, self.damage, 10)
+        game_world.add_object(grenade, game_world.BULLET_LAYER)
+        if self.ammo_max >= self.magazine_max_capacity:
+            self.magazine_capacity = self.magazine_max_capacity
+            self.ammo_max -= self.magazine_max_capacity
+        else:
+            self.magazine_capacity = self.ammo_max
+            self.ammo_max = 0
+
+    @staticmethod
+    def do(self):
+        self.timer -= game_framework.frame_time
+        if self.timer <= 0:
+            self.add_event(TIMER)
+
+
 class RELOAD:
     @staticmethod
     def enter(self, event):
@@ -124,7 +211,6 @@ class RELOAD:
         else:
             self.magazine_capacity = self.ammo_max
             self.ammo_max = 0
-        pass
 
     @staticmethod
     def do(self):
@@ -143,6 +229,11 @@ next_state_handgun = {
     IDLE: {LMD: SHOOT, LMU: IDLE, RD: RELOAD, TIMER: IGNORE},
     SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: IDLE},
     RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
+}
+
+next_state_grenade = {
+    IDLE: {LMD: THROW, LMU: IDLE, RD: IGNORE, TIMER: IGNORE},
+    THROW: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE},
 }
 
 class Gun:
@@ -309,9 +400,38 @@ class Handgun(Gun):
                 self.cur_state.enter(self, event)
 
 
-class Grenade:
-    
-    pass
+class Grenades(Gun):
+    def __init__(self):
+        # 탄약
+        self.magazine_capacity = 1
+        self.magazine_max_capacity = 1
+        self.ammo_max = 6
+
+        # 상태
+        self.timer, self.rof = 0, 10
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 80
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self, None)
+
+    def update(self):
+        self.cur_state.do(self)
+
+        if self.event_que:
+            event = self.event_que.pop()
+            if next_state_grenade[self.cur_state][event] != IGNORE:
+                self.cur_state.exit(self, event)
+                try:
+                    self.cur_state = next_state_grenade[self.cur_state][event]
+                except KeyError:
+                    print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
+                # self.cur_state = next_state[self.cur_state][event]
+                self.cur_state.enter(self, event)
 
 
 class Knife:

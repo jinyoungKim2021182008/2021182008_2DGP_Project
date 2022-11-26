@@ -24,7 +24,7 @@ class Item:
     def get_bb(self):
         return self.x - self.w // 2, self.y - self.h // 2, self.x + self.w // 2, self.y + self.h // 2
 
-    def collide_handle(self, other):
+    def handle_collide(self, other):
         pass
 
 
@@ -37,9 +37,9 @@ class Target(Item):
         if Target.image is None:
             Target.image = load_image('image/item/target.png')
 
-    def collide_handle(self, other):
-        if game_world.returnEnemyCnt() == 0:
+    def handle_collide(self, other):
+        if game_world.return_enemy_cnt() == 0:
             print('you win')
             game_framework.change_state(menu_state)
         else:
-            print(f'{game_world.returnEnemyCnt()} enemy left')
+            print(f'{game_world.return_enemy_cnt()} enemy left')

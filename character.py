@@ -2,10 +2,12 @@ from pico2d import *
 import math
 
 import random
+
+import game_constant
 import game_world
 import play_state
 from game_constant import Point, Circle, Rect
-from efecte import BloodEffect, DeadEffect
+from effect import BloodEffect, DeadEffect
 import game_framework
 import weapon
 from ui import Cursor
@@ -168,6 +170,7 @@ class SHOOT:
     def enter(self, event):
         self.bs = 3
         self.body_frame = 0
+
         self.timer = 0.1
         pass
 
@@ -184,6 +187,29 @@ class SHOOT:
                 self.add_event(LMU)
             else:
                 self.add_event(TIMER)
+
+
+class THROW:
+    ACTION_PER_TIME = 10
+    FRAMES_PER_ACTION = 15
+
+    @staticmethod
+    def enter(self, event):
+        self.bs = 3
+        self.body_frame = 0
+
+        self.timer = 2.0
+
+    @staticmethod
+    def exit(self, event):
+        pass
+
+    @staticmethod
+    def do(self):
+        self.body_frame = (self.body_frame + THROW.ACTION_PER_TIME * game_framework.frame_time) % THROW.FRAMES_PER_ACTION
+        self.timer -= game_framework.frame_time
+        if self.timer <= 0:
+            self.add_event(TIMER)
 
 
 class RELOAD:
@@ -214,27 +240,28 @@ class RELOAD:
 class CHANGE_WEAPON:
     ACTION_PER_TIME = 20
     FRAMES_PER_ACTION = 15
-
+    next_weapon = 0
     @staticmethod
     def enter(self, event):
         if event == D1:
             if self.select_weapon == 0:
                 self.add_event(TIMER)
-            self.select_weapon = 0
+            CHANGE_WEAPON.next_weapon = 0
         if event == D2:
             if self.select_weapon == 1:
                 self.add_event(TIMER)
-            self.select_weapon = 1
+            CHANGE_WEAPON.next_weapon = 1
         if event == D3:
             if self.select_weapon == 2:
                 self.add_event(TIMER)
-            self.select_weapon = 2
+            CHANGE_WEAPON.next_weapon = 2
         self.bs = 2
         self.body_frame = 0
         self.timer = 1.5
 
     @staticmethod
     def exit(self, event):
+        self.select_weapon = CHANGE_WEAPON.next_weapon
         pass
 
     @staticmethod
@@ -253,6 +280,7 @@ next_move_state = {
 next_action_state = {
     IDLE: {LMD: SHOOT, LMU: IGNORE, RD: RELOAD, TIMER: IGNORE, D1: CHANGE_WEAPON, D2: CHANGE_WEAPON, D3: CHANGE_WEAPON},
     SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: SHOOT, D1: IGNORE, D2: IGNORE, D3: IGNORE},
+    THROW: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE, D1: IGNORE, D2: IGNORE, D3: IGNORE},
     RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE, D1: IGNORE, D2: IGNORE, D3: IGNORE},
     CHANGE_WEAPON: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE, D1: IGNORE, D2: IGNORE, D3: IGNORE}
 }
@@ -360,7 +388,7 @@ class Character:
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
 
-    def getPs(self):
+    def get_ps(self):
         return [Point(self.x + 10, self.y + 10), Point(self.x + 10, self.y - 10),
                 Point(self.x - 10, self.y - 10), Point(self.x - 10, self.y + 10)]
 
@@ -376,13 +404,13 @@ class Character:
                                                      self.body_image_w[self.bs] // 5, self.body_image_h[self.bs] // 5)
         draw_rectangle(*self.get_bb())
 
-    def getCircle(self):
+    def get_circle(self):
         return Circle(Point(self.x, self.y), 10)
 
-    def getRect(self):
+    def get_rect(self):
         return Rect(self.x, self.y, 20, 20, 0)
 
-    def collide_handle(self, other):
+    def handle_collide(self, other):
         if type(other).__name__ == 'Bullet':
             self.armor -= other.damage
             if self.armor < 0:
@@ -400,18 +428,25 @@ class Character:
 
         if type(other).__name__ == 'SandBarricade':
             speed = 0.0
-            # if self.fs == 1:
-            #     speed = WALK_SPEED_PPS
-            # if self.fs == 2:
-            #     speed = RUN_SPEED_PPS
-            # if self.feet_dir_x != 0 and self.feet_dir_x != 0:
-            #     self.x -= self.feet_dir_x * speed * game_framework.frame_time / 1.4
-            #     self.y -= self.feet_dir_y * speed * game_framework.frame_time / 1.4
-            # elif self.feet_dir_x != 0:
-            #     self.x -= self.feet_dir_x * speed * game_framework.frame_time
-            # elif self.feet_dir_y != 0:
-            #     self.y -= self.feet_dir_y * speed * game_framework.frame_time
-            print(1)
+            if self.fs == 1:
+                speed = WALK_SPEED_PPS
+            if self.fs == 2:
+                speed = RUN_SPEED_PPS
+            if self.feet_dir_x != 0 and self.feet_dir_y != 0:
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time / 1.4 + self.feet_dir_x
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time / 1.4 + self.feet_dir_y
+            elif self.feet_dir_x != 0 or self.feet_dir_y != 0:
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time + self.feet_dir_x
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time + self.feet_dir_y
+
+            self.x += self.feet_dir_x * speed * game_framework.frame_time
+            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time
+
+            self.y += self.feet_dir_y * speed * game_framework.frame_time
+            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time
+
 
 class Player(Character):
     feet_image = None
@@ -497,7 +532,7 @@ class Player(Character):
         if sub_weapon_num == 0:
             self.weapons.append(weapon.Handgun(True))
         if grenade_num == 0:
-            pass
+            self.weapons.append(weapon.Grenades())
         if grenade_num == 1:
             pass
         self.select_weapon = 0
@@ -526,7 +561,10 @@ class Player(Character):
                 if next_action_state[self.action_state][event] != IGNORE:
                     self.action_state.exit(self, event)
                     try:
-                        self.action_state = next_action_state[self.action_state][event]
+                        if self.returnNowWeapon() >= 3 and next_action_state[self.action_state][event] == SHOOT:
+                            self.action_state = THROW
+                        else:
+                            self.action_state = next_action_state[self.action_state][event]
                     except KeyError:
                         print(f'ERROR: State {self.action_state.__name__} Event {event_name[event]}')
                     self.action_state.enter(self, event)
@@ -567,8 +605,10 @@ class Player(Character):
             return 1
         elif type(self.weapons[self.select_weapon]).__name__ == 'Handgun':
             return 2
+        elif type(self.weapons[self.select_weapon]).__name__ == 'Grenades':
+            return 3
         else:
-            return 0
+            return -1
 
     def draw(self):
         self.feet_image[self.fs].clip_composite_draw(int(self.feet_frame) * self.feet_image_w[self.fs], 0,
@@ -645,4 +685,5 @@ class Enemy(Character):
         self.move_state = IDLE
         self.action_state = IDLE
         self.move_state.enter(self, None)
-    pass
+
+

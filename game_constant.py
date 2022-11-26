@@ -36,30 +36,34 @@ class Circle:
 
 
 def collide(object1, object2, pair):
+    if pair == 'GO':
+        p, rad = Line2Rect_RPR(object1.get_line(), object2.get_ps())
+        if p is not None:
+            return p, rad
+
     if pair == 'CO':
-        if Rect2Rect(object1.getPs(), object2.getPs()):
+        if Rect2Rect(object1.get_ps(), object2.get_ps()):
             return True
-        return False
 
     if pair == 'PI':
-        # print(object1.get_bb())
         if AABB(object1.get_bb(), object2.get_bb()):
             return True
-        return False
 
     if pair == 'BC':
-        p = LineGr2Circle_RP(object1.getLine(), object1.rad, object2.getCircle())
+        p = LineGr2Circle_RP(object1.get_line(), object1.rad, object2.get_circle())
         if p is not None:
             return [p, object2]
             # object1.collide_handle(object2, p)
             # object2.collide_handle(object1)
 
     if pair == 'BO':
-        p = Line2Rect_RP(object1.getLine(), object2.getPs())
+        p = Line2Rect_RP(object1.get_line(), object2.get_ps())
         if p is not None:
             return [p, object2]
             # object1.collide_handle(object2, p)
             # object2.collide_handle(object1)
+
+    return False
 
 
 def Point2Rect(p, rect):
@@ -172,6 +176,24 @@ def LineGr2Circle(line, rad, circle):
     if Line2Line(n_line, line):
         return True
     return False
+
+
+def Line2Rect_RPR(line, rps):
+    min_p = None
+    min_len = None
+    min_i = None
+    rect_lines = [Line(rps[0], rps[1]), Line(rps[1], rps[2]), Line(rps[2], rps[3]), Line(rps[3], rps[0])]
+    ps = [Line2Line_RP(line, rect_lines[0]), Line2Line_RP(line, rect_lines[1]),
+          Line2Line_RP(line, rect_lines[2]), Line2Line_RP(line, rect_lines[3])]
+
+    for i in range(4):
+        if ps[i] is not None:
+            len = getLengthPow(line.p1, ps[i])
+            if min_len is None or len < min_len:
+                min_p, min_len, min_i = ps[i], len, i
+
+    return min_p, math.atan2(rect_lines[min_i].p2.y - rect_lines[min_i].p1.y,
+                             rect_lines[min_i].p2.x - rect_lines[min_i].p1.x)
 
 
 def Line2Rect_RP(line, rps):

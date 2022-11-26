@@ -15,28 +15,6 @@ class SandBarricade:
         self.width = 100
         self.height = 15
         self.ps = []
-        self.setPs()
-
-    def update(self):
-        pass
-
-    def setpos(self, x, y, rad):
-        self.rad = rad
-        self.x = y
-        self.y = x
-
-    def draw(self):
-        self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
-                                       self.rad, '0', self.x, self.y, self.width, self.height)
-        self.drawPs()
-
-    def getPs(self):
-        return self.ps
-
-    def collide_handle(self, other):
-        pass
-
-    def setPs(self):
         dis = math.sqrt((self.width / 2) ** 2 + (self.height / 2) ** 2)
         dtheta = math.atan(self.height / self.width)
         self.ps.append(Point(self.x + dis * math.cos(self.rad + dtheta),
@@ -48,16 +26,33 @@ class SandBarricade:
         self.ps.append(Point(self.x + dis * math.cos(self.rad - dtheta + math.pi),
                              self.y + dis * math.sin(self.rad - dtheta + math.pi)))
 
-    def drawPs(self):
+    def update(self):
+        pass
+
+    def set_pos(self, x, y, rad):
+        self.rad = rad
+        self.x = y
+        self.y = x
+
+    def draw(self):
+        self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
+                                       self.rad, '0', self.x, self.y, self.width, self.height)
         for i in range(4):
             self.img.draw(self.ps[i].x, self.ps[i].y)
+
+    def get_ps(self):
+        return self.ps
+
+    def handle_collide(self, other):
+        pass
+
 
 class SteelBarricade:
     def __init__(self):
 
         pass
 
-    def render(self):
+    def draw(self):
 
         pass
 
@@ -66,14 +61,14 @@ class Stone:
     def __init__(self):
         pass
 
-    def render(self):
+    def draw(self):
         pass
 
 class TargetPoint:
     def __init__(self):
         pass
 
-    def render(self):
+    def draw(self):
         pass
 
 

@@ -17,7 +17,7 @@ class Cursor:
     def get_pos(self):
         return self.x, self.y
 
-    def getPoint(self):
+    def get_pp(self):
         return game_constant.Point(self.x, self.y)
 
     def update(self):
@@ -45,7 +45,7 @@ class Button:
     def update(self):
         pass
 
-    def getRect(self):
+    def get_rect(self):
         return game_constant.RectP(self.y + self.w // 2, self.y - self.w // 2, self.x - self.w // 2, self.x + self.w // 2)
 
 class InfoBox:
@@ -64,7 +64,7 @@ class InfoBox:
     def update(self):
         self.hp, self.armor, self.maz, self.max = play_state.player.getInfo()
 
-    def drawInfo(self):
+    def draw_info(self):
         hps = []
         hps.append(self.hp // 100)
         hps.append((self.hp - hps[0] * 100) // 10)
@@ -87,7 +87,6 @@ class InfoBox:
             self.num_img[mazs[i]].draw(575 + i * 20, 40, 10, 16)
             self.num_img[maxs[i]].draw(720 + i * 20, 40, 10, 16)
 
-
     def draw(self):
         self.image.draw(self.x, self.y, self.w, self.h)
-        self.drawInfo()
+        self.draw_info()

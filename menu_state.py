@@ -21,10 +21,10 @@ grenade_num = 0
 weapon_buttons = []
 
 
-def collider():
+def collide_objects():
     global stage_num, main_weapon_num, sub_weapon_num, grenade_num
     for button in stage_buttons:
-        if game_constant.Point2Rect(cursor.getPoint(), button.getRect()):
+        if game_constant.Point2Rect(cursor.get_pp(), button.get_rect()):
             for b in stage_buttons:
                 b.state = 0
             if button.name == 't':
@@ -35,11 +35,11 @@ def collider():
                 stage_num = 2
             stage_buttons[stage_num].state = 1
 
-    if game_constant.Point2Rect(cursor.getPoint(), play_button.getRect()):
+    if game_constant.Point2Rect(cursor.get_pp(), play_button.get_rect()):
         game_framework.change_state(play_state)
 
     for button in weapon_buttons:
-        if game_constant.Point2Rect(cursor.getPoint(), button.getRect()):
+        if game_constant.Point2Rect(cursor.get_pp(), button.get_rect()):
             if button.state == 1:
                 if button.name == 'main_l':
                     main_weapon_num -= 1
@@ -65,7 +65,7 @@ def handle_events():
         elif event.type == SDL_MOUSEMOTION:
             cursor.handle_event(event)
         elif event.type == SDL_MOUSEBUTTONDOWN:
-            collider()
+            collide_objects()
 
 
 def enter():
@@ -91,8 +91,8 @@ def enter():
     if len(sub_weapons) == 0:
         sub_weapons.append(load_image('image/weapon/handgun.png'))
     if len(grenades) == 0:
-        grenades.append(load_image('image/weapon/grenade_1.png'))
-        grenades.append(load_image('image/weapon/grenade_2.png'))
+        grenades.append(load_image('image/weapon/grenades_1.png'))
+        grenades.append(load_image('image/weapon/grenades_2.png'))
 
     if len(weapon_buttons) == 0:
         weapon_buttons.append(ui.Button(load_image('image/ui/button/l_button_off.png'), load_image('image/ui/button/l_button_on.png'), 220, 210, 30, 30, 'main_l'))
@@ -119,7 +119,7 @@ def exit():
 def update():
     for game_object in game_world.all_objects():
         game_object.draw()
-    game_world.object_collider()
+    game_world.collide_objects()
     for b in weapon_buttons:
         b.state = 1
     if main_weapon_num == 0:

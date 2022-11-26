@@ -44,7 +44,7 @@ def clear():
         layer.clear()
 
 
-def object_collider():
+def collide_objects():
     # 총알이 한번에 여러 물체에 충돌하는 경우 가장 가까운 경우만 처리
     for bullet in objects[BULLET_LAYER]:
         ps = []
@@ -61,30 +61,30 @@ def object_collider():
         min_len, min_obj, min_p = None, None, None
         if ps:
             for p, object2 in ps:
-                len = game_constant.getLength(bullet.getPos(), p)
+                len = game_constant.getLength(bullet.get_pos(), p)
                 if min_len is None or len < min_len:
                     min_len = len
                     min_obj = object2
                     min_p = p
 
             if min_obj is not None:
-                bullet.collide_handle(min_obj, min_p)
-                min_obj.collide_handle(bullet)
+                bullet.handle_collide(min_obj, min_p)
+                min_obj.handle_collide(bullet)
 
     # 캐릭터와 구조물 처리
     for character in objects[CHARACTER_LAYER]:
         for object in objects[OBJECT_LAYER]:
             if game_constant.collide(character, object, 'CO'):
-                play_state.player.collide_handle(object)
+                play_state.player.handle_collide(object)
 
     # 아이템과 캐릭터 처리
     for item in objects[ITEM_LAYER]:
         if game_constant.collide(play_state.player, item, 'PI'):
-            play_state.player.collide_handle(item)
-            item.collide_handle(play_state.player)
+            play_state.player.handle_collide(item)
+            item.handle_collide(play_state.player)
 
 
-def returnEnemyCnt():
+def return_enemy_cnt():
     cnt = 0
     for character in objects[CHARACTER_LAYER]:
         if type(character).__name__ == 'Enemy':

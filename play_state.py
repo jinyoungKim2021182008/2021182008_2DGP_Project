@@ -43,13 +43,13 @@ def exit():
 def update():
     for game_object in game_world.all_objects():
         game_object.update()
-    game_world.object_collider()
+    game_world.collide_objects()
 
     delay(0.02)
 
 
 def draw_world():
-    stage.drawStage()
+    stage.draw_stage()
     for game_object in game_world.all_objects():
         game_object.draw()
 
@@ -58,6 +58,7 @@ def draw():
     clear_canvas()
     draw_world()
     update_canvas()
+
 
 def pause():
     pass
