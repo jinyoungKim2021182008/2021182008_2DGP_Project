@@ -498,7 +498,7 @@ class Player(Character):
                                   load_image('image/character/player/body/handgun/shoot.png')], # cnt = 3
                                  [load_image('image/character/player/body/grenade/idle.png'),   # cnt = 20
                                   load_image('image/character/player/body/grenade/move.png'),   # cnt = 20
-                                  None,
+                                  load_image('image/character/player/body/grenade/shoot.png'),  # cnt = 15
                                   load_image('image/character/player/body/grenade/shoot.png')]]  # cnt = 15
             Player.body_image_w = [[self.body_image[0][0].w // 20, self.body_image[0][1].w // 20,
                                    self.body_image[0][2].w // 20, self.body_image[0][3].w // 3],
@@ -507,7 +507,7 @@ class Player(Character):
                                    [self.body_image[2][0].w // 20, self.body_image[2][1].w // 20,
                                    self.body_image[2][2].w // 15, self.body_image[2][3].w // 3],
                                    [self.body_image[3][0].w // 20, self.body_image[3][1].w // 20,
-                                    None, self.body_image[3][3].w // 15]]
+                                    self.body_image[3][2].w // 15, self.body_image[3][3].w // 15]]
             Player.body_image_h = [[self.body_image[0][0].h, self.body_image[0][1].h,
                                    self.body_image[0][2].h, self.body_image[0][3].h],
                                    [self.body_image[1][0].h, self.body_image[1][1].h,
@@ -515,7 +515,7 @@ class Player(Character):
                                    [self.body_image[2][0].h, self.body_image[2][1].h,
                                    self.body_image[2][2].h, self.body_image[2][3].h],
                                    [self.body_image[3][0].h, self.body_image[3][1].h,
-                                    None, self.body_image[3][3].h]]
+                                    self.body_image[3][2].h, self.body_image[3][3].h]]
 
         self.body_frame = 0
         self.body_reload_frame = 0
@@ -532,9 +532,9 @@ class Player(Character):
         if sub_weapon_num == 0:
             self.weapons.append(weapon.Handgun(True))
         if grenade_num == 0:
-            self.weapons.append(weapon.Grenades())
+            self.weapons.append(weapon.Grenades_1())
         if grenade_num == 1:
-            pass
+            self.weapons.append(weapon.Grenades_2())
         self.select_weapon = 0
 
         self.event_que = []
@@ -563,6 +563,8 @@ class Player(Character):
                     try:
                         if self.returnNowWeapon() >= 3 and next_action_state[self.action_state][event] == SHOOT:
                             self.action_state = THROW
+                        elif self.returnNowWeapon() >= 3 and next_action_state[self.action_state][event] == RELOAD:
+                            self.action_state = IDLE
                         else:
                             self.action_state = next_action_state[self.action_state][event]
                     except KeyError:
@@ -605,7 +607,7 @@ class Player(Character):
             return 1
         elif type(self.weapons[self.select_weapon]).__name__ == 'Handgun':
             return 2
-        elif type(self.weapons[self.select_weapon]).__name__ == 'Grenades':
+        elif type(self.weapons[self.select_weapon]).__name__ == 'Grenades_1' or type(self.weapons[self.select_weapon]).__name__ == 'Grenades_2':
             return 3
         else:
             return -1

@@ -60,7 +60,7 @@ class Bullet:
         game_world.add_object(effect.BulletEffect(point.x, point.y), game_world.BULLET_EFFECT_LAYER)
 
 
-class Grenade:
+class Grenade_1:
     image = None
     image_w, image_h = None, None
 
@@ -69,12 +69,12 @@ class Grenade:
         self.dx, self.dy = self.x, self.y
         self.speed = speed * 1000.0 / 360.0 * 20.0
         self.rad = rad
-        self.timer = 8.0
+        self.timer = 6.0
         self.damage = damage
         self.fir = True
-        if Grenade.image is None:
-            Grenade.image = load_image('image/weapon/grenade_1.png')
-            Grenade.image_w, Grenade.image_h = Grenade.image.w, Grenade.image.h
+        if Grenade_1.image is None:
+            Grenade_1.image = load_image('image/weapon/grenade_1.png')
+            Grenade_1.image_w, Grenade_1.image_h = Grenade_1.image.w, Grenade_1.image.h
 
     def update(self):
         if self.fir:
@@ -86,13 +86,13 @@ class Grenade:
             if self.x < 0 or self.x > stage.STAGE_WIDTH:
                 self.x = clamp(0, self.x, stage.STAGE_WIDTH)
                 self.rad += math.pi - self.rad * 2
-            if self.y < 0 or self.y > stage.STAGE_HEIGHT:
+            if self.y < 80 or self.y > stage.STAGE_HEIGHT:
                 self.rad = -self.rad
                 self.y = clamp(0, self.y, stage.STAGE_HEIGHT)
 
             self.timer -= game_framework.frame_time
             if self.timer < 0:
-                pass
+                self.explosion()
 
             self.speed -= 5
             if self.speed < 0:
@@ -104,7 +104,9 @@ class Grenade:
 
     def explosion(self):
         game_world.remove_object(self)
-        pass
+        d_rad = math.pi / 4
+        bullets = [Bullet(self.x, self.y, self.rad + d_rad * i, self.damage) for i in range(8)]
+        game_world.add_objects(bullets, game_world.BULLET_LAYER)
 
     def get_pos(self):
         dis = self.speed * game_framework.frame_time
@@ -126,7 +128,28 @@ class Grenade:
         if deg < 0:
             deg += 180.0
 
-        pass
+
+class Grenade_2(Grenade_1):
+    image = None
+    image_w, image_h = None, None
+
+    def __init__(self, x, y, rad, damage, speed):
+        self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
+        self.dx, self.dy = self.x, self.y
+        self.speed = speed * 1000.0 / 360.0 * 20.0
+        self.rad = rad
+        self.timer = 6.0
+        self.damage = damage
+        self.fir = True
+        if Grenade_2.image is None:
+            Grenade_2.image = load_image('image/weapon/grenade_2.png')
+            Grenade_2.image_w, Grenade_2.image_h = Grenade_2.image.w, Grenade_2.image.h
+
+    def explosion(self):
+        game_world.remove_object(self)
+        d_rad = math.pi / 8
+        bullets = [Bullet(self.x, self.y, self.rad + d_rad * i, self.damage) for i in range(16)]
+        game_world.add_objects(bullets, game_world.BULLET_LAYER)
 
 
 LMD, LMU, RD, TIMER, IGNORE = range(5)
@@ -190,7 +213,11 @@ class THROW:
 
     @staticmethod
     def exit(self, event):
-        grenade = Grenade(self.x, self.y, self.rad, self.damage, 10)
+        grenade = None
+        if type(self).__name__ == 'Grenades_1':
+            grenade = Grenade_1(self.x, self.y, self.rad, self.damage, 10)
+        if type(self).__name__ == 'Grenades_2':
+            grenade = Grenade_2(self.x, self.y, self.rad, self.damage, 10)
         game_world.add_object(grenade, game_world.GRENADE_LAYER)
         if self.ammo_max >= self.magazine_max_capacity:
             self.magazine_capacity = self.magazine_max_capacity
@@ -409,7 +436,7 @@ class Handgun(Gun):
                 self.cur_state.enter(self, event)
 
 
-class Grenades(Gun):
+class Grenades_1(Gun):
     def __init__(self):
         # 탄약
         self.magazine_capacity = 1
@@ -441,6 +468,26 @@ class Grenades(Gun):
                     print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
                 # self.cur_state = next_state[self.cur_state][event]
                 self.cur_state.enter(self, event)
+
+
+class Grenades_2(Grenades_1):
+    def __init__(self):
+        # 탄약
+        self.magazine_capacity = 1
+        self.magazine_max_capacity = 1
+        self.ammo_max = 6
+
+        # 상태
+        self.timer, self.rof = 0, 10
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 100
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self, None)
 
 
 class Knife:

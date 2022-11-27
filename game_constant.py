@@ -61,7 +61,7 @@ def collide(object1, object2, pair):
     if pair == 'BO':
         p = Line2Rect_RP(object1.get_line(), object2.get_ps())
         if p is not None:
-            return p
+            return [p, object2]
             # object1.collide_handle(object2, p)
             # object2.collide_handle(object1)
 

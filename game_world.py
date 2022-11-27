@@ -61,22 +61,24 @@ def collide_objects():
             if p is not None:
                 ps.append(p)
 
-        min_len, min_p = None, None
+        min_len, min_p, min_obj = None, None, None
         if ps:
             for p in ps:
-                len = game_constant.getLength(bullet.get_pos(), p)
+                print(p)
+                len = game_constant.getLength(bullet.get_pos(), p[0])
                 if min_len is None or len < min_len:
                     min_len = len
-                    min_p = p
+                    min_p = p[0]
+                    min_obj = p[1]
 
-            if min_p is not None:
-                bullet.handle_collide(min_p)
+        if min_p is not None:
+            bullet.handle_collide(min_p)
+            min_obj.handle_collide(bullet)
 
     # 수류탄과 구조물 처리
     for grenade in objects[GRENADE_LAYER]:
         for object in objects[OBJECT_LAYER]:
             p, rad = game_constant.collide(grenade, object, 'GO')
-            # print(p, rad)
             if p is not False:
                 grenade.handle_collide(p, rad)
 
