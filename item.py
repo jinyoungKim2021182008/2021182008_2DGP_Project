@@ -2,7 +2,6 @@ from pico2d import *
 
 import game_framework
 import game_world
-import game_constant
 import menu_state
 
 
@@ -43,3 +42,25 @@ class Target(Item):
             game_framework.change_state(menu_state)
         else:
             print(f'{game_world.return_enemy_cnt()} enemy left')
+
+
+class HealPack(Item):
+    def __init__(self, x, y, w, h):
+        self.x, self.y = x, y
+        self.w, self.h = w, h
+        if Target.image is None:
+            Target.image = load_image('image/item/heal_pack.png')
+
+    def handle_collide(self, other):
+        game_world.remove_object(self)
+
+
+class ArmorPack(Item):
+    def __init__(self, x, y, w, h):
+        self.x, self.y = x, y
+        self.w, self.h = w, h
+        if Target.image is None:
+            Target.image = load_image('image/item/armor_pack.png')
+
+    def handle_collide(self, other):
+        game_world.remove_object(self)

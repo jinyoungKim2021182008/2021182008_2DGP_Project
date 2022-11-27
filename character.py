@@ -447,6 +447,12 @@ class Character:
             if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
                 self.y -= self.feet_dir_y * speed * game_framework.frame_time
 
+        if type(other).__name__ == 'HealPack':
+            self.hp = 100
+
+        if type(other).__name__ == 'ArmorPack':
+            self.armor = 100
+
 
 class Player(Character):
     feet_image = None
