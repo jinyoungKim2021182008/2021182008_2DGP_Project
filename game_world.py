@@ -7,12 +7,15 @@ CHARACTER_EFFECT_LAYER = 2
 ITEM_LAYER = 3
 CHARACTER_LAYER = 4
 BULLET_EFFECT_LAYER = 5
-BULLET_LAYER = 6
-UI_BUTTON = 7
-UI_LAYER = 8
+GRENADE_LAYER = 6
+BULLET_LAYER = 7
+UI_BUTTON = 8
+UI_LAYER = 9
 
 
-objects = [[], [], [], [], [], [], [], [], []]
+objects = [[], [], [], [], [], [], [], [], [], []]
+collision_group = dict()
+
 
 def add_object(object, depth):
     objects[depth].append(object)
@@ -58,18 +61,24 @@ def collide_objects():
             if p is not None:
                 ps.append(p)
 
-        min_len, min_obj, min_p = None, None, None
+        min_len, min_p = None, None
         if ps:
-            for p, object2 in ps:
+            for p in ps:
                 len = game_constant.getLength(bullet.get_pos(), p)
                 if min_len is None or len < min_len:
                     min_len = len
-                    min_obj = object2
                     min_p = p
 
-            if min_obj is not None:
-                bullet.handle_collide(min_obj, min_p)
-                min_obj.handle_collide(bullet)
+            if min_p is not None:
+                bullet.handle_collide(min_p)
+
+    # 수류탄과 구조물 처리
+    for grenade in objects[GRENADE_LAYER]:
+        for object in objects[OBJECT_LAYER]:
+            p, rad = game_constant.collide(grenade, object, 'GO')
+            # print(p, rad)
+            if p is not False:
+                grenade.handle_collide(p, rad)
 
     # 캐릭터와 구조물 처리
     for character in objects[CHARACTER_LAYER]:
@@ -89,23 +98,28 @@ def return_enemy_cnt():
     for character in objects[CHARACTER_LAYER]:
         if type(character).__name__ == 'Enemy':
             cnt += 1
-
     return cnt
 
 
-"""
-def add_collision_pairs(object1, object2, group):
+def add_collision_pairs(a, b, group):
+
     if group not in collision_group:
         print('Add new group ', group)
-        collision_group[group] = [[], []]   # list of list : list pair
+        collision_group[group] = [ [], [] ] # list of list : list pair
 
-    if object1:
-        if type(object2) is list: collision_group[group][1] += object2
-        else: collision_group[group][1].append(object2)
+    if a:
+        if type(a) is list:
+            collision_group[group][1] += a
+        else:
+            collision_group[group][1].append(a)
 
-    if object2:
-        if type(object1) is list: collision_group[group][0] += object1
-        else: collision_group[group][0].append(object1)
+    if b:
+        if type(b) is list:
+            collision_group[group][0] += b
+        else:
+            collision_group[group][0].append(b)
+
+    print(collision_group)
 
 
 def all_collision_pairs():
@@ -115,10 +129,17 @@ def all_collision_pairs():
                 yield a, b, group
 
 
-def remove_collision_object(object):
+def remove_collision_object(o):
     for pairs in collision_group.values():
-        if object in pairs[0]:
-            pairs[0].remove(object)
-        if object in pairs[1]:
-            pairs[1].remove(object)
-"""
+        if o in pairs[0]:
+            pairs[0].remove(o)
+        if o in pairs[1]:
+            pairs[1].remove(o)
+
+
+def update():
+    for game_object in all_objects():
+        game_object.update()
+
+
+# game_world.add_collision_pairs(server.boy, server.balls, 'BB')

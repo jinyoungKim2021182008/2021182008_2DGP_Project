@@ -55,7 +55,7 @@ class Bullet:
         ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
         return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
 
-    def handle_collide(self, other, point):
+    def handle_collide(self, point):
         game_world.remove_object(self)
         game_world.add_object(effect.BulletEffect(point.x, point.y), game_world.BULLET_EFFECT_LAYER)
 
@@ -66,8 +66,6 @@ class Grenade:
 
     def __init__(self, x, y, rad, damage, speed):
         self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
-        self.x += (damage - 10) * math.cos(rad)
-        self.y += (damage - 10) * math.sin(rad)
         self.dx, self.dy = self.x, self.y
         self.speed = speed * 1000.0 / 360.0 * 20.0
         self.rad = rad
@@ -96,7 +94,7 @@ class Grenade:
             if self.timer < 0:
                 pass
 
-            self.speed -= 10
+            self.speed -= 5
             if self.speed < 0:
                 self.speed = 0
 
@@ -109,14 +107,25 @@ class Grenade:
         pass
 
     def get_pos(self):
-        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
+        dis = self.speed * game_framework.frame_time
+        ds, dc = dis * math.sin(self.rad), dis * math.cos(self.rad)
         return game_constant.Point(self.dx - dc, self.dy - ds)
 
     def get_line(self):
-        ds, dc = self.damage * math.sin(self.rad), self.damage * math.cos(self.rad)
-        return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds), game_constant.Point(self.x + dc, self.y + ds))
+        dis = self.speed * game_framework.frame_time
+        ds, dc = dis * math.sin(self.rad), dis * math.cos(self.rad)
+        return game_constant.Line(game_constant.Point(self.dx - dc, self.dy - ds),
+                                  game_constant.Point(self.x + dc, self.y + ds))
 
-    def handle_collide(self, other, point):
+    def handle_collide(self, p, rad):
+        self.rad += 2 * (rad - self.rad)
+        dis = self.speed * game_framework.frame_time
+        ds, dc = dis * math.sin(self.rad), dis * math.cos(self.rad)
+        self.x, self.y = p.x + dc, p.y + ds
+        deg = math.degrees(rad)
+        if deg < 0:
+            deg += 180.0
+
         pass
 
 
@@ -182,7 +191,7 @@ class THROW:
     @staticmethod
     def exit(self, event):
         grenade = Grenade(self.x, self.y, self.rad, self.damage, 10)
-        game_world.add_object(grenade, game_world.BULLET_LAYER)
+        game_world.add_object(grenade, game_world.GRENADE_LAYER)
         if self.ammo_max >= self.magazine_max_capacity:
             self.magazine_capacity = self.magazine_max_capacity
             self.ammo_max -= self.magazine_max_capacity

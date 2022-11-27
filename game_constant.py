@@ -6,6 +6,9 @@ class Point:
         self.x = x
         self.y = y
 
+    def __lt__(self, other):
+        return (self.x + self.y) < (other.x + other.y)
+
 
 class Line:
     def __init__(self, p1, p2):
@@ -38,8 +41,7 @@ class Circle:
 def collide(object1, object2, pair):
     if pair == 'GO':
         p, rad = Line2Rect_RPR(object1.get_line(), object2.get_ps())
-        if p is not None:
-            return p, rad
+        return p, rad
 
     if pair == 'CO':
         if Rect2Rect(object1.get_ps(), object2.get_ps()):
@@ -59,11 +61,9 @@ def collide(object1, object2, pair):
     if pair == 'BO':
         p = Line2Rect_RP(object1.get_line(), object2.get_ps())
         if p is not None:
-            return [p, object2]
+            return p
             # object1.collide_handle(object2, p)
             # object2.collide_handle(object1)
-
-    return False
 
 
 def Point2Rect(p, rect):
@@ -192,8 +192,11 @@ def Line2Rect_RPR(line, rps):
             if min_len is None or len < min_len:
                 min_p, min_len, min_i = ps[i], len, i
 
-    return min_p, math.atan2(rect_lines[min_i].p2.y - rect_lines[min_i].p1.y,
-                             rect_lines[min_i].p2.x - rect_lines[min_i].p1.x)
+    if min_p is not None:
+        return min_p, math.atan2(rect_lines[min_i].p2.y - rect_lines[min_i].p1.y,
+                                 rect_lines[min_i].p2.x - rect_lines[min_i].p1.x)
+    else:
+        return False, False
 
 
 def Line2Rect_RP(line, rps):
@@ -254,9 +257,11 @@ def Line2Line(l1, l2):
     ab = CCW(a, b, c) * CCW(a, b, d)
     cd = CCW(c, d, a) * CCW(c, d, b)
     if ab == 0 and cd == 0:
-        if a > b: a, b = b, a
-        if c > d: c, d = d, c
-        return c <= b and a <= d
+        if a > b:
+            a, b = b, a
+        if c > d:
+            c, d = d, c
+        return c < b and a < d
 
     return ab <= 0 and cd <= 0
 
