@@ -6,7 +6,8 @@ import game_world
 import ui
 import object
 import play_state
-from character import Player, Enemy
+from character import Player
+from enemy import Enemy
 from item import Target
 
 from game_constant import *
@@ -49,10 +50,7 @@ def setStage(n):
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
         # enemy
-        game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
         game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)

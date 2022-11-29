@@ -152,22 +152,13 @@ class Grenade_2(Grenade_1):
         game_world.add_objects(bullets, game_world.BULLET_LAYER)
 
 
-LMD, LMU, RD, TIMER, IGNORE = range(5)
-event_name = ['MOUSE_DOWN', 'MOUSE_UP', 'RD', 'TIMER', 'IGNORE']
-key_event_table = {
-    (SDL_MOUSEBUTTONDOWN, None): LMD,
-    (SDL_MOUSEBUTTONUP, None): LMU,
-    (SDL_KEYDOWN, SDLK_r): RD
-}
-
-
 class IDLE:
     @staticmethod
-    def enter(self, event):
+    def enter(self):
         pass
 
     @staticmethod
-    def exit(self, event):
+    def exit(self):
         pass
 
     @staticmethod
@@ -177,7 +168,7 @@ class IDLE:
 
 class SHOOT:
     @staticmethod
-    def enter(self, event):
+    def enter(self):
         if self.magazine_capacity <= 0: return
         self.magazine_capacity -= 1
 
@@ -192,19 +183,16 @@ class SHOOT:
             self.recoil = self.max_recoil
 
     @staticmethod
-    def exit(self, event):
+    def exit(self):
         pass
 
     @staticmethod
     def do(self):
         self.timer -= game_framework.frame_time
-        if self.timer <= 0:
-            self.add_event(TIMER)
-
 
 class THROW:
     @staticmethod
-    def enter(self, event):
+    def enter(self):
         if self.magazine_capacity <= 0:
             self.cur_state = IDLE
             return
@@ -212,7 +200,7 @@ class THROW:
         self.timer = 1.0
 
     @staticmethod
-    def exit(self, event):
+    def exit(self):
         grenade = None
         if type(self).__name__ == 'Grenades_1':
             grenade = Grenade_1(self.x, self.y, self.rad, self.damage, 10)
@@ -230,17 +218,17 @@ class THROW:
     def do(self):
         self.timer -= game_framework.frame_time
         if self.timer <= 0:
-            self.add_event(TIMER)
+            self.state_update(IDLE)
 
 
 class RELOAD:
     @staticmethod
-    def enter(self, event):
+    def enter(self):
         self.timer = 2
         pass
 
     @staticmethod
-    def exit(self, event):
+    def exit(self):
         if self.ammo_max >= self.magazine_max_capacity:
             self.magazine_capacity = self.magazine_max_capacity
             self.ammo_max -= self.magazine_max_capacity
@@ -252,25 +240,8 @@ class RELOAD:
     def do(self):
         self.timer -= game_framework.frame_time
         if self.timer <= 0:
-            self.add_event(TIMER)
+            self.state_update(IDLE)
 
-
-next_state = {
-    IDLE: {LMD: SHOOT, LMU: IDLE, RD: RELOAD, TIMER: IGNORE},
-    SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: SHOOT},
-    RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
-}
-
-next_state_handgun = {
-    IDLE: {LMD: SHOOT, LMU: IDLE, RD: RELOAD, TIMER: IGNORE},
-    SHOOT: {LMD: IGNORE, LMU: IDLE, RD: RELOAD, TIMER: IDLE},
-    RELOAD: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE}
-}
-
-next_state_grenade = {
-    IDLE: {LMD: THROW, LMU: IDLE, RD: IGNORE, TIMER: IGNORE},
-    THROW: {LMD: IGNORE, LMU: IGNORE, RD: IGNORE, TIMER: IDLE},
-}
 
 class Gun:
     def __init__(self, activate):
@@ -292,16 +263,14 @@ class Gun:
         self.damage = 45
         self.shake = 0
 
-        self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
+        self.cur_state.enter(self)
 
     def setPos(self, x, y, rad):
         self.x, self.y = x + 10 * math.sin(rad), y - 10 * math.cos(rad)
         self.rad = rad
 
     def update(self):
-
         self.recoil = (self.recoil - 0.7 * game_framework.frame_time)
         if self.shake == 2:
             if self.recoil < self.mul_recoil / 3:
@@ -315,24 +284,10 @@ class Gun:
 
         self.cur_state.do(self)
 
-        if self.event_que:
-            event = self.event_que.pop()
-            if next_state[self.cur_state][event] != IGNORE:
-                self.cur_state.exit(self, event)
-                try:
-                    self.cur_state = next_state[self.cur_state][event]
-                except KeyError:
-                    print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
-                # self.cur_state = next_state[self.cur_state][event]
-                self.cur_state.enter(self, event)
-
-    def add_event(self, event):
-        self.event_que.insert(0, event)
-
-    def handle_event(self, event):
-        if (event.type, event.key) in key_event_table:
-            key_event = key_event_table[(event.type, event.key)]
-            self.add_event(key_event)
+    def state_update(self, state):
+        self.cur_state.exit(self)
+        self.cur_state = state
+        self.cur_state.enter(self)
 
 
 class Rifle_1(Gun):  # like a
@@ -358,7 +313,7 @@ class Rifle_1(Gun):  # like a
 
         self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
+        self.cur_state.enter(self)
 
 
 class Rifle_2(Gun):  # like m
@@ -383,7 +338,7 @@ class Rifle_2(Gun):  # like m
 
         self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
+        self.cur_state.enter(self)
 
 
 class Handgun(Gun):
@@ -408,32 +363,7 @@ class Handgun(Gun):
 
         self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
-
-    def update(self):
-        self.recoil = (self.recoil - 0.7 * game_framework.frame_time)
-        if self.shake == 2:
-            if self.recoil < self.mul_recoil / 3:
-                self.recoil = self.mul_recoil / 3
-        if self.shake == 1:
-            if self.recoil < self.mul_recoil / 6:
-                self.recoil = self.mul_recoil / 6
-        elif self.shake == 0:
-            if self.recoil < 0:
-                self.recoil = 0
-
-        self.cur_state.do(self)
-
-        if self.event_que:
-            event = self.event_que.pop()
-            if next_state_handgun[self.cur_state][event] != IGNORE:
-                self.cur_state.exit(self, event)
-                try:
-                    self.cur_state = next_state_handgun[self.cur_state][event]
-                except KeyError:
-                    print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
-                # self.cur_state = next_state[self.cur_state][event]
-                self.cur_state.enter(self, event)
+        self.cur_state.enter(self)
 
 
 class Grenades_1(Gun):
@@ -453,21 +383,10 @@ class Grenades_1(Gun):
 
         self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
+        self.cur_state.enter(self)
 
     def update(self):
         self.cur_state.do(self)
-
-        if self.event_que:
-            event = self.event_que.pop()
-            if next_state_grenade[self.cur_state][event] != IGNORE:
-                self.cur_state.exit(self, event)
-                try:
-                    self.cur_state = next_state_grenade[self.cur_state][event]
-                except KeyError:
-                    print(f'ERROR: State {self.cur_state.__name__} Event {event_name[event]}')
-                # self.cur_state = next_state[self.cur_state][event]
-                self.cur_state.enter(self, event)
 
 
 class Grenades_2(Grenades_1):

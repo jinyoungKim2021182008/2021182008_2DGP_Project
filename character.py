@@ -51,6 +51,8 @@ class IDLE:
             self.bs = 0
             self.body_frame = 0
 
+        self.weapons[self.select_weapon].state_update(weapon.IDLE)
+
     @staticmethod
     def exit(self, event):
         pass
@@ -172,7 +174,7 @@ class SHOOT:
         self.body_frame = 0
 
         self.timer = 0.1
-        pass
+        self.weapons[self.select_weapon].state_update(weapon.SHOOT)
 
     @staticmethod
     def exit(self, event):
@@ -224,6 +226,7 @@ class RELOAD:
             self.timer = 2.0
         self.bs = 2
         self.body_frame = 0
+        self.weapons[self.select_weapon].state_update(weapon.RELOAD)
 
     @staticmethod
     def exit(self, event):
@@ -270,6 +273,7 @@ class CHANGE_WEAPON:
         self.timer -= game_framework.frame_time
         if self.timer <= 0:
             self.add_event(TIMER)
+
 
 next_move_state = {
     IDLE: {WD: WALK, SD: WALK, AD: WALK, DD: WALK, WU: WALK, SU: WALK, AU: WALK, DU: WALK, LSHD: RUN, LSHU: IGNORE},
@@ -381,9 +385,6 @@ class Character:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
             self.weapons[self.select_weapon].handle_event(event)
-        else:
-            if event.type == SDL_MOUSEMOTION:
-                self.cursor.set_pos(event.x, 800 - 1 - event.y)
 
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
@@ -452,6 +453,18 @@ class Character:
 
         if type(other).__name__ == 'ArmorPack':
             self.armor = 100
+
+    def returnNowWeapon(self):
+        if type(self.weapons[self.select_weapon]).__name__ == 'Rifle_1':
+            return 0
+        elif type(self.weapons[self.select_weapon]).__name__ == 'Rifle_2':
+            return 1
+        elif type(self.weapons[self.select_weapon]).__name__ == 'Handgun':
+            return 2
+        elif type(self.weapons[self.select_weapon]).__name__ == 'Grenades_1' or type(self.weapons[self.select_weapon]).__name__ == 'Grenades_2':
+            return 3
+        else:
+            return -1
 
 
 class Player(Character):
@@ -601,22 +614,10 @@ class Player(Character):
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
-            self.weapons[self.select_weapon].handle_event(event)
+            # self.weapons[self.select_weapon].handle_event(event)
 
     def getInfo(self):
         return self.hp, self.armor, self.weapons[self.select_weapon].magazine_capacity, self.weapons[self.select_weapon].ammo_max
-
-    def returnNowWeapon(self):
-        if type(self.weapons[self.select_weapon]).__name__ == 'Rifle_1':
-            return 0
-        elif type(self.weapons[self.select_weapon]).__name__ == 'Rifle_2':
-            return 1
-        elif type(self.weapons[self.select_weapon]).__name__ == 'Handgun':
-            return 2
-        elif type(self.weapons[self.select_weapon]).__name__ == 'Grenades_1' or type(self.weapons[self.select_weapon]).__name__ == 'Grenades_2':
-            return 3
-        else:
-            return -1
 
     def draw(self):
         self.feet_image[self.fs].clip_composite_draw(int(self.feet_frame) * self.feet_image_w[self.fs], 0,
@@ -634,6 +635,7 @@ class Player(Character):
         draw_rectangle(*self.get_bb())
 
 
+"""
 class Enemy(Character):
     feet_image = None
     feet_image_w = []
@@ -643,16 +645,12 @@ class Enemy(Character):
     body_image_h = []
 
     def __init__(self, x, y, hp, armor):
-        """
-        캐릭터 위치 및 정보
-        """
+        
         self.x, self.y = x, y
         self.speed = 0
         self.hp = hp
         self.armor = armor
-        """
-        캐릭터 발  
-        """
+        
         # 0 = idle, 1 = walk, 2 = run
         if Enemy.feet_image is None:
             Enemy.feet_image = [load_image('image/character/enemy/feet/idle.png'),  # cnt = 1
@@ -665,9 +663,7 @@ class Enemy(Character):
         self.feet_dir_x, self.feet_dir_y = 0, 0
         self.feet_frame = 0
         self.fs = 0
-        """
-        캐릭터 몸  
-        """
+        
         # 0 = idle, 1 = move, 2 = reload, 3 = shoot
         if Enemy.body_image is None:
             Enemy.body_image = [load_image('image/character/enemy/body/idle.png'),  # cnt = 20
@@ -683,9 +679,7 @@ class Enemy(Character):
         self.body_reload_frame = 0
         self.body_rad = 0
         self.bs = 0
-        """
-        무기
-        """
+        
         self.weapons = [weapon.Rifle_2(True), weapon.Gun(True), weapon.Gun(True)]
         self.select_weapon = 0
 
@@ -693,5 +687,67 @@ class Enemy(Character):
         self.move_state = IDLE
         self.action_state = IDLE
         self.move_state.enter(self, None)
+
+        self.build_behavior_tree()
+
+    def calculate_current_position(self):
+        self.frame = (self.frame + game_framework.frame_time) % 20
+        self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
+        self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
+        self.x = clamp(50, self.x, 1280 - 50)
+        self.y = clamp(50, self.y, 1024 - 50)
+
+    def find_random_location(self):
+        self.tx, self.ty = random.randint(50, 1230), random.randint(50, 974)
+        return BehaviorTree.SUCCESS
+
+    def move_to(self, radius = 0.5):
+        distance = (self.tx - self.x) ** 2 + (self.ty - self.y) ** 2
+        self.dir = math.atan2(self.ty - self.y, self.tx - self.x)
+        if distance < (PIXEL_PER_METER * radius) ** 2:
+            self.speed = 0
+            return BehaviorTree.SUCCESS
+        else:
+            self.speed = RUN_SPEED_PPS
+            return BehaviorTree.RUNNING
+
+    def find_ball_location(self):
+        self.target_ball = None
+        shortest_distance = 1280 ** 2
+        # find in-sight(5meters) and nearest ball
+        for o in game_world.all_objects():
+            if type(o) is Ball:
+                ball = o
+                distance = (ball.x - self.x) ** 2 + (ball.y - self.y) ** 2
+                if distance < (PIXEL_PER_METER * 7) ** 2 and distance < shortest_distance:
+                    self.target_ball = ball
+                    shortest_distance = distance
+        if self.target_ball is not None:
+            self.tx, self.ty = self.target_ball.x, self.target_ball.y
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+    def calculate_squared_distance(self, a, b):
+        return (a.x-b.x)**2 + (a.y-b.y)**2
+
+    def move_to_boy(self):
+        # fill here
+        pass
+
+    def flee_from_boy(self):
+        # fill here
+        pass
+
+    def build_behavior_tree(self):
+        find_random_location_node = Leaf('Find Random Location', self.find_random_location)
+        move_to_node = Leaf('Move To', self.move_to)
+        play_beep_node = Leaf('Play Beep', self.play_beep)
+        wander_sequence = Sequence('Wander', find_random_location_node, move_to_node, play_beep_node)
+        find_ball_location_node = Leaf('Find Ball Location', self.find_ball_location)
+        eat_ball_sequence = Sequence('Eat Ball', find_ball_location_node, move_to_node, play_beep_node)
+        wander_or_eat_ball_selector = Selector('Wander or Eat Ball', eat_ball_sequence, wander_sequence)
+        self.bt = BehaviorTree(wander_or_eat_ball_selector)
+"""
 
 
