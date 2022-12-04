@@ -18,7 +18,7 @@ BULLET_SPEED_PPS = (BULLET_SPEED_MPS * PIXEL_PER_METER)
 class Bullet:
     image = None
     image_w, image_h = None, None
-
+    fire_sound = None
     def __init__(self, x, y, rad, damage):
         self.x, self.y = x + 50 * math.cos(rad), y + 50 * math.sin(rad)
         self.x += (damage - 10) * math.cos(rad)
@@ -30,6 +30,10 @@ class Bullet:
         if Bullet.image is None:
             Bullet.image = load_image('image/weapon/bullet.png')
             Bullet.image_w, Bullet.image_h = Bullet.image.w, Bullet.image.h
+        if Bullet.fire_sound is None:
+            Bullet.fire_sound = load_wav('sound/gun_shot.wav')
+            Bullet.fire_sound.set_volume(32)
+        Bullet.fire_sound.play()
 
     def update(self):
         if self.fir:
@@ -61,6 +65,7 @@ class Bullet:
 
 
 class Grenade_1:
+    sound = None
     image = None
     image_w, image_h = None, None
 
@@ -75,6 +80,9 @@ class Grenade_1:
         if Grenade_1.image is None:
             Grenade_1.image = load_image('image/weapon/grenade_1.png')
             Grenade_1.image_w, Grenade_1.image_h = Grenade_1.image.w, Grenade_1.image.h
+        if Grenade_1.sound is None:
+            Grenade_1.sound = load_wav('sound/grenade.wav')
+            Grenade_1.sound.set_volume(16)
 
     def update(self):
         if self.fir:
@@ -107,6 +115,7 @@ class Grenade_1:
         d_rad = math.pi / 4
         bullets = [Bullet(self.x, self.y, self.rad + d_rad * i, self.damage) for i in range(8)]
         game_world.add_objects(bullets, game_world.BULLET_LAYER)
+        Grenade_1.sound.play()
 
     def get_pos(self):
         dis = self.speed * game_framework.frame_time
@@ -341,6 +350,32 @@ class Rifle_2(Gun):  # like m
         self.cur_state.enter(self)
 
 
+class Rifle_3(Gun):  # like a
+    def __init__(self, activate):
+        # 탄약
+        # super().__init__(activate)
+        self.magazine_capacity = 30
+        self.magazine_max_capacity = 30
+        self.ammo_max = 1800000
+
+        # 반동
+        self.recoil, self.max_recoil = 0, 0.3  # rad
+        self.add_recoil, self.mul_recoil = 0.1, 1.2
+
+        # 상태
+        self.activate = activate
+        self.timer = 0
+        self.x, self.y = 0, 0
+        self.rad = 0
+        # 총알
+        self.damage = 45
+        self.shake = 0
+
+        self.event_que = []
+        self.cur_state = IDLE
+        self.cur_state.enter(self)
+
+
 class Handgun(Gun):
     def __init__(self, activate):
         # 탄약
@@ -394,7 +429,7 @@ class Grenades_2(Grenades_1):
         # 탄약
         self.magazine_capacity = 1
         self.magazine_max_capacity = 1
-        self.ammo_max = 6
+        self.ammo_max = 2
 
         # 상태
         self.timer, self.rof = 0, 10
@@ -406,7 +441,7 @@ class Grenades_2(Grenades_1):
 
         self.event_que = []
         self.cur_state = IDLE
-        self.cur_state.enter(self, None)
+        self.cur_state.enter(self)
 
 
 class Knife:

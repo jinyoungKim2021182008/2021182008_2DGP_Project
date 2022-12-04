@@ -31,10 +31,7 @@ def setStage(n):
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
         # enemy
-        game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(400, 400, 100, 100, math.radians(135)), game_world.CHARACTER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
@@ -50,13 +47,24 @@ def setStage(n):
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
         # enemy
-        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(150, 130, 100, 100, math.radians(80)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(50, 130, 100, 100, math.radians(130)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(150, 625, 100, 100, math.radians(-80)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(600, 620, 100, 100, math.radians(-120)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(420, 420, 100, 100, math.radians(-135)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(380, 380, 100, 100, math.radians(45)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(380, 680, 100, 100, math.radians(80)), game_world.CHARACTER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(150, 600, 13), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(700, 200, 30), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(300, 130, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(600, 150, 60), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(380, 655, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(700, 455, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
 
@@ -66,16 +74,27 @@ def setStage(n):
         # stage_image
         game_world.add_object(stage_images[0], game_world.FLOOR_LAYER)
         # enemy
-        game_world.add_object(Enemy(200, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(250, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(300, 200, 100, 100), game_world.CHARACTER_LAYER)
-        game_world.add_object(Enemy(350, 200, 100, 100), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(150, 130, 100, 150, math.radians(80)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(50, 130, 100, 150, math.radians(130)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(150, 625, 100, 150, math.radians(-80)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(600, 620, 100, 150, math.radians(-120)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(420, 420, 100, 150, math.radians(-135)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(380, 380, 100, 150, math.radians(45)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(380, 680, 100, 150, math.radians(80)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(80, 250, 100, 150, math.radians(10)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(180, 450, 100, 150, math.radians(-50)), game_world.CHARACTER_LAYER)
+        game_world.add_object(Enemy(410, 560, 100, 150, math.radians(-110)), game_world.CHARACTER_LAYER)
         # object
         game_world.add_object(object.SandBarricade(100, 170, 0), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(500, 500, 45), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(300, 400, 90), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(150, 600, 13), game_world.OBJECT_LAYER)
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(700, 200, 30), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(300, 130, 90), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(600, 150, 60), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(380, 655, 0), game_world.OBJECT_LAYER)
+        game_world.add_object(object.SandBarricade(700, 455, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
 

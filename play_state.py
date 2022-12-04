@@ -5,6 +5,7 @@ import stage
 import ui
 import menu_state
 import character
+import pause_state
 
 
 player = None
@@ -17,7 +18,7 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
+            game_framework.push_state(pause_state)
         elif event.type == SDL_MOUSEMOTION:
             cursor.handle_event(event)
         else:
@@ -28,7 +29,7 @@ def enter():
     global cursor, player
     cursor = ui.Cursor()
     game_world.add_object(cursor, game_world.UI_LAYER)
-    player = character.Player(400, 400, 100, 100, menu_state.main_weapon_num, menu_state.sub_weapon_num, menu_state.grenade_num)
+    player = character.Player(750, 130, 100, 100, menu_state.main_weapon_num, menu_state.sub_weapon_num, menu_state.grenade_num)
     game_world.add_object(player, game_world.CHARACTER_LAYER)
     stage.setStage(menu_state.stage_num)
 

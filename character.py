@@ -199,8 +199,8 @@ class THROW:
     def enter(self, event):
         self.bs = 3
         self.body_frame = 0
-
         self.timer = 2.0
+        self.weapons[self.select_weapon].state_update(weapon.THROW)
 
     @staticmethod
     def exit(self, event):
@@ -384,7 +384,6 @@ class Character:
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
-            self.weapons[self.select_weapon].handle_event(event)
 
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
@@ -447,6 +446,7 @@ class Character:
             self.y += self.feet_dir_y * speed * game_framework.frame_time
             if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
                 self.y -= self.feet_dir_y * speed * game_framework.frame_time
+            print(other.x, other.y)
 
         if type(other).__name__ == 'HealPack':
             self.hp = 100

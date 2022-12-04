@@ -13,12 +13,12 @@ class Enemy(Character):
     body_image_w = []
     body_image_h = []
 
-    def __init__(self, x, y, hp, armor):
+    def __init__(self, x, y, hp, armor, rad):
         """
         캐릭터 위치 및 정보
         """
         self.x, self.y = x, y
-        self.tx, self.ty, self.trad = x, y, 0.0
+        self.tx, self.ty, self.trad = x, y, rad
         self.speed = 0
         self.hp = hp
         self.armor = armor
@@ -54,18 +54,20 @@ class Enemy(Character):
 
         self.body_frame = 0
         self.body_reload_frame = 0
-        self.body_rad = 0
+        self.body_rad = rad
         self.bs = 0
         """
         무기
         """
-        self.weapons = [weapon.Rifle_1(True)]
+        self.weapons = [weapon.Rifle_3(True)]
         self.select_weapon = 0
 
         self.event_que = []
         self.move_state = IDLE
         self.action_state = IDLE
         self.move_state.enter(self, None)
+
+        self.last_bullet_rad = rad
 
         self.build_behavior_tree()
 
@@ -166,6 +168,13 @@ class Enemy(Character):
         # fill here
         pass
 
+    def turn_head_hit(self):
+        if self.body_rad != self.last_bullet_rad:
+            print(self.last_bullet_rad)
+            self.trad = self.last_bullet_rad
+            return BehaviorTree.SUCCESS
+        return BehaviorTree.FAIL
+
     def build_behavior_tree(self):
         # find_random_location_node = Leaf('Find Random Location', self.find_random_location)
         # move_to_node = Leaf('Move To', self.move_to)
@@ -180,8 +189,25 @@ class Enemy(Character):
         shoot_node = Leaf('Shoot Head', self.shoot)
         player_sequence = Sequence('Player', find_player_node, turn_head_node, shoot_node)
 
+        hit_node = Leaf('Hit', self.turn_head_hit)
+        hit_sequence = Sequence('Check', hit_node, turn_head_node)
+
         idle_node = Leaf('Idle', self.idle)
         idle_sequence = Sequence('Ammo', idle_node)
 
-        selector = Selector('Wander or Eat Ball', ammo_sequence, player_sequence, idle_sequence)
+        selector = Selector('Wander or Eat Ball', ammo_sequence, player_sequence, hit_sequence, idle_sequence)
         self.bt = BehaviorTree(selector)
+
+    def handle_collide(self, other):
+        if type(other).__name__ == 'Bullet':
+            self.last_bullet_rad = (other.rad + math.pi)
+            self.armor -= other.damage
+            if self.armor < 0:
+                self.hp += self.armor
+                self.armor = 0
+                game_world.add_object(BloodEffect(self.x, self.y, other.rad + random.uniform(-0.5, 0.5)),
+                                      game_world.CHARACTER_EFFECT_LAYER)
+
+            if self.hp <= 0:
+                game_world.add_object(DeadEffect(self.x, self.y), game_world.CHARACTER_EFFECT_LAYER)
+                game_world.remove_object(self)
