@@ -5,10 +5,8 @@ import game_world
 
 import ui
 import object
-import play_state
-from character import Player
 from enemy import Enemy
-from item import Target
+from item import Target, HealPack, ArmorPack, AmmoPack
 
 from game_constant import *
 
@@ -40,6 +38,9 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(400, 300, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
+        game_world.add_object(ArmorPack(625, 275, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(AmmoPack(625, 175, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(HealPack(625, 375, 30, 30), game_world.ITEM_LAYER)
 
     elif n == 1:
         stage_num = 1
@@ -67,6 +68,12 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(700, 455, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
+        game_world.add_object(ArmorPack(425, 475, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(AmmoPack(625, 115, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(AmmoPack(725, 695, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(ArmorPack(750, 735, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(HealPack(115, 375, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(HealPack(655, 115, 30, 30), game_world.ITEM_LAYER)
 
     elif n == 2:
         stage_num = 2
@@ -97,6 +104,12 @@ def setStage(n):
         game_world.add_object(object.SandBarricade(700, 455, 0), game_world.OBJECT_LAYER)
         # item
         game_world.add_object(Target(25, 775, 50, 50), game_world.ITEM_LAYER)
+        game_world.add_object(ArmorPack(425, 475, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(AmmoPack(625, 115, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(AmmoPack(725, 695, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(ArmorPack(750, 735, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(HealPack(115, 375, 30, 30), game_world.ITEM_LAYER)
+        game_world.add_object(HealPack(655, 115, 30, 30), game_world.ITEM_LAYER)
 
 def draw_stage():
     stage_images[stage_num].draw(STAGE_WIDTH // 2, STAGE_HEIGHT // 2, STAGE_WIDTH, STAGE_HEIGHT)

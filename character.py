@@ -423,37 +423,6 @@ class Character:
                 game_world.add_object(DeadEffect(self.x, self.y), game_world.CHARACTER_EFFECT_LAYER)
                 game_world.remove_object(self)
 
-        if type(other).__name__ == 'Target':
-            pass
-
-        if type(other).__name__ == 'SandBarricade':
-            speed = 0.0
-            if self.fs == 1:
-                speed = WALK_SPEED_PPS
-            if self.fs == 2:
-                speed = RUN_SPEED_PPS
-            if self.feet_dir_x != 0 and self.feet_dir_y != 0:
-                self.x -= self.feet_dir_x * speed * game_framework.frame_time / 1.4 + self.feet_dir_x
-                self.y -= self.feet_dir_y * speed * game_framework.frame_time / 1.4 + self.feet_dir_y
-            elif self.feet_dir_x != 0 or self.feet_dir_y != 0:
-                self.x -= self.feet_dir_x * speed * game_framework.frame_time + self.feet_dir_x
-                self.y -= self.feet_dir_y * speed * game_framework.frame_time + self.feet_dir_y
-
-            self.x += self.feet_dir_x * speed * game_framework.frame_time
-            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
-                self.x -= self.feet_dir_x * speed * game_framework.frame_time
-
-            self.y += self.feet_dir_y * speed * game_framework.frame_time
-            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
-                self.y -= self.feet_dir_y * speed * game_framework.frame_time
-            print(other.x, other.y)
-
-        if type(other).__name__ == 'HealPack':
-            self.hp = 100
-
-        if type(other).__name__ == 'ArmorPack':
-            self.armor = 100
-
     def returnNowWeapon(self):
         if type(self.weapons[self.select_weapon]).__name__ == 'Rifle_1':
             return 0
@@ -633,6 +602,53 @@ class Player(Character):
                                                          self.body_image_h[nw][self.bs] // 5)
 
         draw_rectangle(*self.get_bb())
+
+    def handle_collide(self, other):
+        if type(other).__name__ == 'Bullet':
+            self.armor -= other.damage
+            if self.armor < 0:
+                self.hp += self.armor
+                self.armor = 0
+                game_world.add_object(BloodEffect(self.x, self.y, other.rad + random.uniform(-0.5, 0.5)),
+                                      game_world.CHARACTER_EFFECT_LAYER)
+
+            if self.hp <= 0:
+                game_world.add_object(DeadEffect(self.x, self.y), game_world.CHARACTER_EFFECT_LAYER)
+                game_world.remove_object(self)
+
+        if type(other).__name__ == 'Target':
+            pass
+
+        if type(other).__name__ == 'SandBarricade':
+            speed = 0.0
+            if self.fs == 1:
+                speed = WALK_SPEED_PPS
+            if self.fs == 2:
+                speed = RUN_SPEED_PPS
+            if self.feet_dir_x != 0 and self.feet_dir_y != 0:
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time / 1.4 + self.feet_dir_x
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time / 1.4 + self.feet_dir_y
+            elif self.feet_dir_x != 0 or self.feet_dir_y != 0:
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time + self.feet_dir_x
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time + self.feet_dir_y
+
+            self.x += self.feet_dir_x * speed * game_framework.frame_time
+            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
+                self.x -= self.feet_dir_x * speed * game_framework.frame_time
+
+            self.y += self.feet_dir_y * speed * game_framework.frame_time
+            if game_constant.Rect2Rect(self.get_ps(), other.get_ps()):
+                self.y -= self.feet_dir_y * speed * game_framework.frame_time
+            print(other.x, other.y)
+
+        if type(other).__name__ == 'HealPack':
+            self.hp = 100
+
+        if type(other).__name__ == 'ArmorPack':
+            self.armor = 100
+
+        if type(other).__name__ == 'AmmoPack':
+            self.weapons[self.select_weapon].ammo_max += self.weapons[self.select_weapon].magazine_max_capacity * 3
 
 
 """
