@@ -134,7 +134,7 @@ def update():
         weapon_buttons[4].state = 0
     if grenade_num == len(grenades) - 1:
         weapon_buttons[5].state = 0
-    delay(0.02)
+    # delay(0.02)
 
 
 def draw_world():

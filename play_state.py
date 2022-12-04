@@ -45,8 +45,7 @@ def update():
     for game_object in game_world.all_objects():
         game_object.update()
     game_world.collide_objects()
-
-    delay(0.02)
+    # delay(0.02)
 
 
 def draw_world():

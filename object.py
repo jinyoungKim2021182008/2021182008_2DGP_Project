@@ -37,8 +37,6 @@ class SandBarricade:
     def draw(self):
         self.image.clip_composite_draw(0, 0, self.image.w, self.image.h,
                                        self.rad, '0', self.x, self.y, self.width, self.height)
-        for i in range(4):
-            self.img.draw(self.ps[i].x, self.ps[i].y)
 
     def get_ps(self):
         return self.ps

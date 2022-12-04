@@ -601,8 +601,6 @@ class Player(Character):
                                                          self.body_image_w[nw][self.bs] // 5,
                                                          self.body_image_h[nw][self.bs] // 5)
 
-        draw_rectangle(*self.get_bb())
-
     def handle_collide(self, other):
         if type(other).__name__ == 'Bullet':
             self.armor -= other.damage
@@ -613,6 +611,7 @@ class Player(Character):
                                       game_world.CHARACTER_EFFECT_LAYER)
 
             if self.hp <= 0:
+                self.hp = 0
                 game_world.add_object(DeadEffect(self.x, self.y), game_world.CHARACTER_EFFECT_LAYER)
                 game_world.remove_object(self)
 

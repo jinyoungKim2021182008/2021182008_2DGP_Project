@@ -25,7 +25,6 @@ def handle_events():
 def enter():
     global pause_image
     pause_image = load_image('image/ui/pause.png')
-    pass
 
 
 def exit():
